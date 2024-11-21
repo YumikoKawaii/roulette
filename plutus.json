@@ -1,0 +1,14 @@
+{
+  "preamble": {
+    "title": "danogo-io/predict-interest-rate",
+    "description": "Aiken contracts for project 'danogo-io/predict-interest-rate'",
+    "version": "0.0.0",
+    "plutusVersion": "v3",
+    "compiler": {
+      "name": "Aiken",
+      "version": "v1.1.4+79d0e45"
+    },
+    "license": "Apache-2.0"
+  },
+  "validators": []
+}
