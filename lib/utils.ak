@@ -1,15 +1,19 @@
+use aiken/collection/list
 use aiken/collection/pairs
 use aiken/crypto
 use aiken/interval.{Finite, Interval, IntervalBound, PositiveInfinity}
 use aiken/primitive/bytearray
 use cardano/address.{Credential}
-use cardano/assets.{AssetName, Value, PolicyId}
-use cardano/transaction.{InlineDatum, Input, Output, Withdraw}
+use cardano/assets.{AssetName}
+use cardano/transaction.{InlineDatum, Input, Output, Withdraw, OutputReference}
 use daken/convert
 use daken/flist
-use daken/types.{Basis, Blake2b224Hash, Redeemers, TupleAsset} as daken_types
+use daken/types.{Basis, Redeemers, TupleAsset} as daken_types
+use daken/inputs_hash
+use types.{OracleParams}
+use constants
 
-pub fn get_ref_by_idx(ref_inputs: List<Input>, idx: Int, tk: TupleAsset) -> Data {
+pub fn get_input_by_idx(ref_inputs: List<Input>, idx: Int, tk: TupleAsset) -> Data {
   expect Input {
     output: Output { value: ref_val, datum: InlineDatum(ref_dt), .. },
     ..
@@ -19,19 +23,7 @@ pub fn get_ref_by_idx(ref_inputs: List<Input>, idx: Int, tk: TupleAsset) -> Data
   ref_dt
 }
 
-pub fn require_withdraw_idx(
-  rdmrs: Redeemers,
-  wd: Credential,
-  idx: Int,
-  expect_rdmr: Data,
-) {
-  when rdmrs |> pairs.get_all(Withdraw(wd)) is {
-    [] -> fail @"not found mint redeemer"
-    [_, ..] as f -> (flist.get(f, idx) == expect_rdmr)?
-  }
-}
-
-pub fn get_ref_by_idx_with_remain(
+pub fn get_input_by_idx_with_remain(
   ref_inputs: List<Input>,
   idx: Int,
   tk: TupleAsset,
@@ -46,6 +38,24 @@ pub fn get_ref_by_idx_with_remain(
   let (pid, tn) = tk
   expect assets.quantity_of(ref_val, pid, tn) == 1
   (ref_dt, remain)
+}
+
+pub fn require_withdraw_idx(
+  rdmrs: Redeemers,
+  wd: Credential,
+  idx: Int,
+  expect_rdmr: Data,
+) {
+  when rdmrs |> pairs.get_all(Withdraw(wd)) is {
+    [] -> fail @"not found mint redeemer"
+    [_, ..] as f -> (flist.get(f, idx) == expect_rdmr)?
+  }
+}
+
+pub fn calculate_apy(trigger_params: OracleParams, award_params: OracleParams) -> Int {
+  let n = (award_params.interest_index - trigger_params.interest_index) * constants.year_in_ms 
+  let d = trigger_params.interest_index * (award_params.interest_time - trigger_params.interest_time)
+  n * constants.basis_base / d
 }
 
 pub fn is_valid_range(
@@ -121,6 +131,10 @@ fn do_check_valid_range(
   }
 }
 
+pub fn get_nft_name(inputs: List<Input>) -> AssetName {
+  inputs_hash.blake2b_224_quicksort_asc(inputs)
+}
+
 pub fn get_ticket_token_name(
   unique_key: ByteArray,
   option_idx: Int,
@@ -131,30 +145,12 @@ pub fn get_ticket_token_name(
     |> crypto.blake2b_224
 }
 
-pub fn check_tokens_qty(
-  value: Value,
-  policy_id: PolicyId,
-  tokens: List<AssetName>,
-) -> (Bool, Int) {
-  do_check_token_qty(value, policy_id, 0, 0, tokens)
-}
-
-fn do_check_token_qty(
-  value: Value,
-  policy_id: PolicyId,
-  pre_qty: Int,
-  idx: Int,
-  tokens: List<AssetName>,
-) -> (Bool, Int) {
-  when tokens is {
-    [] -> (True, pre_qty)
-    [x, ..rest] -> {
-      let qty = assets.quantity_of(value, policy_id, x)      
-      if idx == 0 || (qty == pre_qty && qty > 0) {
-        do_check_token_qty(value, policy_id, qty, idx + 1, rest)
-      } else {
-        (False, pre_qty)
-      }
+pub fn get_input_by_out_ref(inputs: List<Input>, out_ref: OutputReference) -> Option<Input> {
+  inputs |> list.foldr(None, fn(a, z) {    
+    if a.output_reference == out_ref {
+      Some(a) 
+    } else {
+      z
     }
-  }
+  })  
 }

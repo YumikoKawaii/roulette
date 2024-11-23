@@ -1,53 +1,35 @@
 use aiken/crypto.{ScriptHash}
 use aiken/interval.{Interval}
-use cardano/address.{Address, Credential, VerificationKey}
+use cardano/address.{Address}
 use cardano/assets.{AssetName, Lovelace}
 use daken/time.{SlotConfig}
-use daken/types.{Basis, Blake2b224Hash, TupleAsset}
+use daken/types.{Basis, TupleAsset}
 
 pub type Action {
   Init {
     ou_session_idx: Int,
     ref_cfg_idx: Int,
     ref_pp_idx: Int,
-    withdraw_rmdr_idx: Int,
+    withdraw_rdmr_idx: Int,
+  }
+  Buy { ou_session_idx: Int, tickets: List<AssetName> }
+  Trigger { ou_session_idx: Int, ref_market_state_idx: Int }
+  Award {
+    ref_cfg_idx: Int,
+    ref_pp_idx: Int,
+    ref_market_state_idx: Int,
+    in_session_idx: Int,
+    ou_session_idx: Int,
+    ou_fee_idx: Int,
+    withdraw_rdmr_idx: Int,
+  }
+  Redeem {
+    ref_cfg_idx: Int,
+    in_session_idx: Int,
+    withdraw_rdmr_idx: Int,
+    ou_session_idx: Option<Int>,
   }
 }
-
-//   Buy { in_session_idx: Int, ou_session_idx: Int}
-//   Trigger {}
-//   Extend {
-//     unique_key: Blake2b224Hash,
-//     ref_cfg_idx: Int,
-//     ref_pp_idx: Int,
-//     ref_market_state_idx: Int,
-//     ref_market_param_idx: Int,
-//     in_state_idx: Int,
-//     ou_state_idx: Int,
-//     withdraw_rmdr_idx: Int,
-//   }
-//   Award {
-//     unique_key: Blake2b224Hash,
-//     ref_cfg_idx: Int,
-//     ref_pp_idx: Int,
-//     ref_market_state_idx: Int,
-//     ref_market_param_idx: Int,
-//     in_state_idx: Int,
-//     ou_state_idx: Int,
-//     ou_organizer_idx: Int,
-//     ou_fee_idx: Int,
-//     withdraw_rmdr_idx: Int,
-//   }
-//   // neu thang thi burn ticket nhan lai ada
-//   // neu thua thi chi burn ticket
-//   Redeem {
-//     unique_key: Blake2b224Hash,
-//     ref_cfg_idx: Int,
-//     withdraw_rmdr_idx: Int,
-//     in_state_idx: Int,
-//     ou_state_idx: Option<Int>,
-//     ou_organizer_idx: Option<Int>,
-//   }
 
 pub type PlatformConfig {
   tk_pp: TupleAsset,
@@ -55,6 +37,7 @@ pub type PlatformConfig {
   withdraw_init: ScriptHash,
   withdraw_award: ScriptHash,
   withdraw_redeem: ScriptHash,
+  withdraw_claim: ScriptHash,
   tx_ttl: Int,
   slot: SlotConfig,
 }
@@ -62,19 +45,36 @@ pub type PlatformConfig {
 pub type ProtocolParams {
   // list of supported tokens
   markets: List<TupleAsset>,
-  // ttl of tx, unit by slot
-  tx_ttl: Int,
+  // ttl of tx, unit by slot  
   min_duration_in_ms: Int,
-  // to support the supply apy for ADA calculation formula
-  ada_market: ByteArray,
   // Basic Point, percentage of fee paid to platform  
   fee: Int,
+  // Basic Point, percentage of fee paid to organizer
+  organizer_award: Int,
   fee_addr: Address,
 }
 
+pub type MarketStateDatum {
+  //use
+  total_supply_amt: Int,
+  total_reserve_amt: Int,
+  total_minted_qtoken: Int,
+  //use
+  total_borrowed_amt: Int,
+  //use
+  total_interest_amt: Int,
+  interest_index: Int,
+  //use
+  interest_rate: (Int, Int),
+  last_interest_at: Int,
+  last_batching_at: Int,
+  qtoken_rate: (Int, Int),
+  min_ada: Int,
+}
+
 pub type PredictType {
-  Supply
-  Borrow
+  LiqwidSupply
+  LiqwidBorrow
 }
 
 pub type OracleParams {
