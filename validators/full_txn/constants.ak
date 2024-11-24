@@ -44,15 +44,15 @@ pub const tx_ttl = 15 * 60 * 1000
 pub const slot_cfg =
   SlotConfig { zero_time: 1596059091000, zero_slot: 4492800, slot_length: 1000 }
 
-pub const state_ref =
+pub const session_ref =
   OutputReference {
     transaction_id: #"b4971034feee28d07f157faf99b850f856d8743494c70b19b521cfe690258e26",
     output_index: 0,
   }
 
-pub const state_ref_lack =
+pub const session_ref_alter =
   OutputReference {
-    transaction_id: #"b4971034feee28d07f157faf99b850f856d8743494c70b19b521cfe490258e26",
+    transaction_id: #"b4971034feee28d07f157faf99b850f856d8743494c70b19b521cfe690258e28",
     output_index: 0,
   }
 
@@ -62,30 +62,15 @@ pub const wl_ref =
     output_index: 0,
   }
 
-pub const pool_refs =
-  [
-    OutputReference {
-      transaction_id: #"0fb512fe0a4cab3930bde544c0445ba345aa2cb901f9b9a3f36dc530e9285835",
-      output_index: 0,
-    },
-    OutputReference {
-      transaction_id: #"0fb512fe0a4cab3930bde544c0445ba345aa2cb901f9b9a3f36dc530e9285835",
-      output_index: 1,
-    },
-  ]
+pub const ticket_per_option = 1_000_000
 
-pub const loss_ticket_sold1 = 23_465
+pub const ticket_sales = 10_000
 
-pub const loss_ticket_sold2 = 56_865
+pub const ticket_price = 1_000_000
 
-pub const win_ticket_sold = 35_674
-
-pub const ticket_per_pool = 1_000_000_000
-
-pub const ticket_price = 10_000_000
+pub const user_lovelace = 200_000_000_000
 
 pub const platform_fee = 500
 
 pub const basis_base = 10_000
 
-pub const user_in_lovelace = 215_000_000

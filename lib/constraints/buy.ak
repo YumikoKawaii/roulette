@@ -47,7 +47,7 @@ pub fn constraints(
     tickets
       |> list.foldr(
           0,
-          fn(a, z) {
+          fn(a, z) {            
             z + (
               assets.quantity_of(in_session_val, pid, a) - assets.quantity_of(
                 ou_session_val,
