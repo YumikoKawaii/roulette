@@ -5,15 +5,19 @@ use aiken/interval.{Finite, Interval, IntervalBound, PositiveInfinity}
 use aiken/primitive/bytearray
 use cardano/address.{Credential}
 use cardano/assets.{AssetName}
-use cardano/transaction.{InlineDatum, Input, Output, Withdraw, OutputReference}
+use cardano/transaction.{InlineDatum, Input, Output, OutputReference, Withdraw}
+use constants
 use daken/convert
 use daken/flist
-use daken/types.{Basis, Redeemers, TupleAsset} as daken_types
 use daken/inputs_hash
+use daken/types.{Basis, Redeemers, TupleAsset} as daken_types
 use types.{OracleParams}
-use constants
 
-pub fn get_input_by_idx(ref_inputs: List<Input>, idx: Int, tk: TupleAsset) -> Data {
+pub fn get_input_by_idx(
+  ref_inputs: List<Input>,
+  idx: Int,
+  tk: TupleAsset,
+) -> Data {
   expect Input {
     output: Output { value: ref_val, datum: InlineDatum(ref_dt), .. },
     ..
@@ -52,9 +56,16 @@ pub fn require_withdraw_idx(
   }
 }
 
-pub fn calculate_apy(trigger_params: OracleParams, award_params: OracleParams) -> Int {
-  let n = (award_params.interest_index - trigger_params.interest_index) * constants.year_in_ms 
-  let d = trigger_params.interest_index * (award_params.interest_time - trigger_params.interest_time)
+pub fn calculate_apy(
+  trigger_params: OracleParams,
+  award_params: OracleParams,
+) -> Int {
+  let n =
+    ( award_params.interest_index - trigger_params.interest_index ) * constants.year_in_ms
+  let d =
+    trigger_params.interest_index * (
+      award_params.interest_time - trigger_params.interest_time
+    )
   n * constants.basis_base / d
 }
 
@@ -145,12 +156,19 @@ pub fn get_ticket_token_name(
     |> crypto.blake2b_224
 }
 
-pub fn get_input_by_out_ref(inputs: List<Input>, out_ref: OutputReference) -> Option<Input> {
-  inputs |> list.foldr(None, fn(a, z) {    
-    if a.output_reference == out_ref {
-      Some(a) 
-    } else {
-      z
-    }
-  })  
+pub fn get_input_by_out_ref(
+  inputs: List<Input>,
+  out_ref: OutputReference,
+) -> Option<Input> {
+  inputs
+    |> list.foldr(
+        None,
+        fn(a, z) {
+          if a.output_reference == out_ref {
+            Some(a)
+          } else {
+            z
+          }
+        },
+      )
 }

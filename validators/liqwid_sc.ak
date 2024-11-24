@@ -76,7 +76,6 @@ validator execute(tk_cfg: TupleAsset) {
           withdraw_redeem,
           ..
         } = reference_inputs |> utils.get_input_by_idx(ref_cfg_idx, tk_cfg)
-
         and {
           (tour_skh == pid)?,
           redeemers

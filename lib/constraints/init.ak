@@ -47,9 +47,12 @@ pub fn constraints(
   let (valid_options, opts) =
     session_datum.ticket_options |> utils.is_valid_range(expect_unique_key)
   // verify tokens quantity  
-  let expect_ou_session_value = list.foldr(opts, assets.from_lovelace(constants.min_ada), fn (a, z) {
-    assets.add(z, pid, a, session_datum.ticket_per_option)      
-  })  
+  let expect_ou_session_value =
+    list.foldr(
+      opts,
+      assets.from_lovelace(constants.min_ada),
+      fn(a, z) { assets.add(z, pid, a, session_datum.ticket_per_option) },
+    )
   // verify Session NFT is mint
   let session_nft_qty = mint |> assets.quantity_of(pid, expect_unique_key)
 
@@ -63,6 +66,7 @@ pub fn constraints(
     (ou_session_ref_script == None)?,
     valid_oracle_policy?,
     valid_options?,
+    (list.length(opts) > 1)?,
     (session_datum.ticket_price % 1_000_000 == 0)?,
     (tx_end_time < session_time_low)?,
     (session_time_hi - pp_datum.min_duration_in_ms >= session_time_low)?,
