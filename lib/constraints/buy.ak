@@ -6,8 +6,6 @@ use cardano/transaction.{
   InlineDatum, Input, Output, OutputReference, ValidityRange,
 }
 use daken/flist
-use daken/time
-use daken/types.{OK} as common_types
 use types.{SessionDatum}
 use utils
 
@@ -47,7 +45,7 @@ pub fn constraints(
     tickets
       |> list.foldr(
           0,
-          fn(a, z) {            
+          fn(a, z) {
             z + (
               assets.quantity_of(in_session_val, pid, a) - assets.quantity_of(
                 ou_session_val,
@@ -70,13 +68,7 @@ pub fn constraints(
       assets.ada_asset_name,
     )
 
-  expect OK((_, tx_end_time)) =
-    time.tx_validity_valid_with_boundaries(
-      validity_range,
-      in_session_datum.slot.slot_length,
-      Some(in_session_datum.tx_ttl),
-      True,
-    )
+  let (_, tx_end_time) = utils.get_transaction_time(validity_range)
 
   and {
     (in_session_addr == ou_session_addr)?,

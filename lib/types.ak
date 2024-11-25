@@ -2,21 +2,18 @@ use aiken/crypto.{ScriptHash}
 use aiken/interval.{Interval}
 use cardano/address.{Address}
 use cardano/assets.{AssetName, Lovelace}
-use daken/time.{SlotConfig}
-use daken/types.{Basis, TupleAsset}
+use daken/types.{TupleAsset}
 
 pub type Action {
   Init {
     ou_session_idx: Int,
-    ref_cfg_idx: Int,
-    ref_pp_idx: Int,
+    ref_cfg_idx: Int,    
     withdraw_rdmr_idx: Int,
   }
   Buy { ou_session_idx: Int, tickets: List<AssetName> }
   Trigger { ou_session_idx: Int, ref_market_state_idx: Int }
   Award {
-    ref_cfg_idx: Int,
-    ref_pp_idx: Int,
+    ref_cfg_idx: Int,    
     ref_market_state_idx: Int,
     in_session_idx: Int,
     ou_session_idx: Int,
@@ -33,19 +30,9 @@ pub type Action {
 
 pub type PlatformConfig {
   tk_pp: TupleAsset,
-  tour_skh: ScriptHash,
   withdraw_init: ScriptHash,
   withdraw_award: ScriptHash,
-  withdraw_redeem: ScriptHash,  
-  tx_ttl: Int,
-  slot: SlotConfig,
-}
-
-pub type ProtocolParams {
-  // list of supported tokens
-  markets: List<TupleAsset>,
-  // ttl of tx, unit by slot  
-  min_duration_in_ms: Int,
+  withdraw_redeem: ScriptHash,
   // Basic Point, percentage of fee paid to platform  
   fee: Int,
   // Basic Point, percentage of fee paid to organizer
@@ -76,21 +63,28 @@ pub type PredictType {
   LiqwidBorrow
 }
 
-pub type OracleParams {
+pub type ResultParams {
   interest_index: Int,
   interest_time: Int,
 }
 
+pub type TicketWin {
+  asset_win: Option<AssetName>,
+  conversion_ratio: Int,
+  remaining_award_ticket_qty: Int,
+}
+
 pub type SessionDatum {
   oracle_policy: TupleAsset,
+  session_token_id: AssetName,
   predict_type: PredictType,
-  ticket_options: List<Interval<Basis>>,
-  ticket_per_option: Int,
-  ticket_price: Lovelace,
-  unique_key: AssetName,
+  // boundaries
+  // [0, 10%), [10%, 20%), [20%, 40%), [40%, None)
+  // -> [1000, 2000, 4000]
+  ticket_options: List<Int>,
+  max_ticket_count_per_option: Int,
+  ticket_price: Lovelace,  
   session_time: Interval<Int>,
-  oracle_params: Option<OracleParams>,
-  ticket_win: Option<(Option<AssetName>, Lovelace, Int)>,
-  tx_ttl: Int,
-  slot: SlotConfig,
+  result_params: Option<ResultParams>,
+  ticket_win: Option<TicketWin>,  
 }

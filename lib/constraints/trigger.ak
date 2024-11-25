@@ -4,9 +4,7 @@ use cardano/transaction.{
 }
 use constants
 use daken/flist
-use daken/time
-use daken/types.{OK} as common_types
-use types.{LiqwidSupply, MarketStateDatum, OracleParams, SessionDatum}
+use types.{LiqwidSupply, MarketStateDatum, ResultParams, SessionDatum}
 use utils
 
 pub fn constraints(
@@ -51,32 +49,26 @@ pub fn constraints(
           in_session_datum.oracle_policy,
         )
 
-  let oracle_params =
+  let result_params =
     when in_session_datum.predict_type is {
       LiqwidSupply -> {
         let (qtoken_rate_num, qtoken_rate_deno) = ref_ms.qtoken_rate
-        OracleParams {
+        ResultParams {
           interest_index: qtoken_rate_num * constants.basis_base / qtoken_rate_deno,
           interest_time: ref_ms.last_interest_at,
         }
       }
       _ ->
-        OracleParams {
+        ResultParams {
           interest_index: ref_ms.interest_index,
           interest_time: ref_ms.last_interest_at,
         }
     }
 
   let expect_ou_session_dt =
-    SessionDatum { ..in_session_datum, oracle_params: Some(oracle_params) }
+    SessionDatum { ..in_session_datum, result_params: Some(result_params) }
 
-  expect OK((tx_start_time, tx_end_time)) =
-    time.tx_validity_valid_with_boundaries(
-      validity_range,
-      in_session_datum.slot.slot_length,
-      Some(in_session_datum.tx_ttl),
-      True,
-    )
+  let (tx_start_time, tx_end_time) = utils.get_transaction_time(validity_range)
 
   and {
     (tx_start_time >= in_session_time_low)?,

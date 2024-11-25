@@ -1,11 +1,11 @@
 use aiken/collection/dict
+use cardano/address.{Address, Script}
 use cardano/assets.{PolicyId, Value}
 use cardano/transaction.{InlineDatum, Input, Output}
 use daken/flist
-use types.{SessionDatum}
+use types.{SessionDatum, TicketWin}
 
 pub fn constraints(
-  pid: PolicyId,
   in_session_idx: Int,
   ou_session_idx: Option<Int>,
   inputs: List<Input>,
@@ -15,7 +15,7 @@ pub fn constraints(
   // find input by idx
   expect Input {
     output: Output {
-      address: in_session_addr,
+      address: Address { payment_credential: Script(pid), .. } as in_session_addr,
       value: in_session_val,
       datum: InlineDatum(in_session_dt),
       ..
@@ -23,8 +23,11 @@ pub fn constraints(
     ..
   } = inputs |> flist.get(in_session_idx)
   expect in_session_datum: SessionDatum = in_session_dt
-  expect Some((asset_win, net_award_per_ticket, remaining_award_ticket_qty)) =
-    in_session_datum.ticket_win
+  expect Some(TicketWin {
+    asset_win,
+    conversion_ratio,
+    remaining_award_ticket_qty,
+  }) = in_session_datum.ticket_win
   let (is_burn_session_nft, ticket_award_burn_qty) =
     mint
       |> assets.tokens(pid)
@@ -32,7 +35,7 @@ pub fn constraints(
           (False, 0),
           fn(token_name, qty, z) {
             if (qty < 0)? {
-              if token_name == in_session_datum.unique_key {
+              if token_name == in_session_datum.session_token_id {
                 (True, z.2nd)
               } else {
                 when asset_win is {
@@ -50,17 +53,15 @@ pub fn constraints(
             }
           },
         )
-  
   let currenct_volume =
     in_session_val
       |> assets.quantity_of(assets.ada_policy_id, assets.ada_asset_name)
   let remaining_lovelace_qty =
-    currenct_volume + ticket_award_burn_qty * net_award_per_ticket - if is_burn_session_nft {
-      currenct_volume - remaining_award_ticket_qty * net_award_per_ticket
+    currenct_volume + ticket_award_burn_qty * conversion_ratio - if is_burn_session_nft {
+      currenct_volume - remaining_award_ticket_qty * conversion_ratio
     } else {
       0
     }
-  
   when remaining_lovelace_qty is {
     0 -> True
     _ -> {
@@ -68,10 +69,10 @@ pub fn constraints(
         SessionDatum {
           ..in_session_datum,
           ticket_win: Some(
-            (
+            TicketWin(
               asset_win,
-              net_award_per_ticket,
-              remaining_award_ticket_qty + ticket_award_burn_qty,
+              conversion_ratio,
+              remaining_award_ticket_qty - ticket_award_burn_qty,
             ),
           ),
         }
