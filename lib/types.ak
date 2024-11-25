@@ -36,8 +36,7 @@ pub type PlatformConfig {
   tour_skh: ScriptHash,
   withdraw_init: ScriptHash,
   withdraw_award: ScriptHash,
-  withdraw_redeem: ScriptHash,
-  withdraw_claim: ScriptHash,
+  withdraw_redeem: ScriptHash,  
   tx_ttl: Int,
   slot: SlotConfig,
 }

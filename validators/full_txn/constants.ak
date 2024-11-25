@@ -12,8 +12,9 @@ pub const organizer_stkh =
 
 pub const wl_pkh = #"d48838fee1e840857dab28a04dd88193aec8c297b85d8150c0a1f5cc"
 
-pub const withdraw_init_skh =
-  #"c6c7536d4f2fa6e6765b6b5ff489b767df9cacd92b48661a9153816e"
+pub const withdraw_init = "withdraw_init"
+pub const withdraw_award = "withdraw_award"
+pub const withdraw_redeem = "withdraw_redeem"
 
 pub const cfg_ref =
   OutputReference {
@@ -78,10 +79,16 @@ pub const user_lovelace = 200_000_000_000
 
 pub const platform_fee = 500
 
+pub const organizer_award = 500
+
 pub const basis_base = 10_000
 
 pub const min_ada = 2_000_000
 
-pub const prev_interest_index = 100
-pub const prev_qtoken_rate = (100, 200)
-pub const prev_interest_time = 1718093543000
+pub const trigger_interest_index = 100
+pub const trigger_qtoken_rate = (100, 200)
+pub const trigger_interest_time = 1718093543000
+
+pub const award_interest_index = 150
+pub const award_qtoken_rate = (105, 205)
+pub const award_interest_time = 1718093546000

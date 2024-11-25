@@ -47,7 +47,7 @@ pub fn constraints(
     upper_bound: IntervalBound { bound_type: Finite(session_time_hi), .. },
     ..
   } = in_session_datum.session_time
-  expect Some(trigger_oracle_params) = in_session_datum.oracle_params
+  expect Some(trigger_oracle_params) = in_session_datum.oracle_params  
   let award_oracle_params =
     when in_session_datum.predict_type is {
       LiqwidSupply -> {
@@ -62,8 +62,8 @@ pub fn constraints(
           interest_index: ms_datum.interest_index,
           interest_time: ms_datum.last_interest_at,
         }
-    }
-  let apy = utils.calculate_apy(trigger_oracle_params, award_oracle_params)
+    }    
+  let apy = utils.calculate_apy(trigger_oracle_params, award_oracle_params)  
   let (asset_win, ticket_sales, expect_burn_assets) =
     in_session_datum.ticket_options
       |> list.indexed_foldr(
@@ -96,7 +96,8 @@ pub fn constraints(
       in_session_val,
       assets.ada_policy_id,
       assets.ada_asset_name,
-    )
+    ) - constants.min_ada 
+  
   let fee_in_lovelace = total_volume * pp_datum.fee / constants.basis_base
   let net_award_per_ticket =
     (
@@ -110,7 +111,7 @@ pub fn constraints(
       ticket_win: Some((asset_win, net_award_per_ticket, ticket_sales)),
     }
   let expect_ou_session_val =
-    assets.from_lovelace(total_volume - fee_in_lovelace)
+    assets.from_lovelace(total_volume - fee_in_lovelace + constants.min_ada)
   // check burn
   // find session output by idx
   expect (
@@ -122,7 +123,6 @@ pub fn constraints(
     }),
     tail,
   ) = outputs |> flist.get_with_tail(ou_session_idx)
-
   // find fee output by idx
   let Output {
     address: ou_fee_addr,
@@ -150,7 +150,7 @@ pub fn constraints(
       Some(in_session_datum.tx_ttl),
       True,
     )
-
+  
   and {
     (tx_start_time > session_time_hi)?,
     (in_session_addr == ou_session_addr)?,

@@ -65,7 +65,7 @@ pub fn calculate_apy(
   let d =
     trigger_params.interest_index * (
       award_params.interest_time - trigger_params.interest_time
-    )
+    )  
   n * constants.basis_base / d
 }
 

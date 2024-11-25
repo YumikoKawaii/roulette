@@ -1,8 +1,7 @@
 use cardano/assets.{Lovelace}
 use cardano/address
 use cardano/transaction.{InlineDatum, Input, NoDatum, Output, OutputReference}
-use daken/time.{SlotConfig}
-use types.{MarketStateDatum, PlatformConfig}
+use types.{MarketStateDatum}
 
 pub const org_vkh = "org_vkh"
 
@@ -31,23 +30,6 @@ pub const withdraw_claim = "withdraw_claim"
 pub const organizer_addr =
   address.from_verification_key(org_vkh)
     |> address.with_delegation_key(org_stkh)
-
-pub fn base_platform_config() {
-  PlatformConfig {
-    tk_pp: (pp_pid, pp_tn),
-    tour_skh,
-    withdraw_init,
-    withdraw_award,
-    withdraw_redeem,
-    withdraw_claim,
-    tx_ttl: 15 * 60 * 1000,
-    slot: SlotConfig {
-      zero_time: 1596059091000,
-      zero_slot: 4492800,
-      slot_length: 1000,
-    },
-  }
-}
 
 pub type InputUtxo {
   input: Input,
