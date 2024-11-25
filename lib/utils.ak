@@ -52,7 +52,7 @@ pub fn require_withdraw_idx(
   expect_rdmr: Data,
 ) {
   when rdmrs |> pairs.get_all(Withdraw(wd)) is {
-    [] -> fail @"not found mint redeemer"
+    [] -> fail @"not found withdraw redeemer"
     [_, ..] as f -> (flist.get(f, idx) == expect_rdmr)?
   }
 }

@@ -61,7 +61,9 @@ pub fn constraints(
           interest_time: ms_datum.last_interest_at,
         }
     }
+  
   let apy = utils.calculate_apy(trigger_result_params, award_result_params)
+  
   let (asset_win, ticket_sales, expect_burn_assets) =
     in_session_datum.ticket_options
       |> utils.generate_options(0)
@@ -72,7 +74,8 @@ pub fn constraints(
             let asset =
               utils.get_ticket_token_name(in_session_datum.session_token_id, idx)
             let remain_qty = assets.quantity_of(in_session_val, pid, asset)
-            let sales = in_session_datum.max_ticket_count_per_option - remain_qty
+            let sales = in_session_datum.max_ticket_count_per_option - remain_qty            
+  
             let (a, s) =
               if r |> interval.contains(apy) {
                 if sales > 0 {
@@ -90,6 +93,7 @@ pub fn constraints(
             (a, s, burn_assets_accum |> assets.add(pid, asset, -remain_qty))
           },
         )
+  
   let total_volume =
     assets.quantity_of(
       in_session_val,
