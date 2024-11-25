@@ -1,6 +1,6 @@
 use aiken/collection/dict
 use cardano/address.{Address, Script}
-use cardano/assets.{PolicyId, Value}
+use cardano/assets.{Value}
 use cardano/transaction.{InlineDatum, Input, Output}
 use daken/flist
 use types.{SessionDatum, TicketWin}

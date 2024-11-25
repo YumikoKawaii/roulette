@@ -5,15 +5,11 @@ use cardano/assets.{AssetName, Lovelace}
 use daken/types.{TupleAsset}
 
 pub type Action {
-  Init {
-    ou_session_idx: Int,
-    ref_cfg_idx: Int,    
-    withdraw_rdmr_idx: Int,
-  }
+  Init { ou_session_idx: Int, ref_cfg_idx: Int, withdraw_rdmr_idx: Int }
   Buy { ou_session_idx: Int, tickets: List<AssetName> }
   Trigger { ou_session_idx: Int, ref_market_state_idx: Int }
   Award {
-    ref_cfg_idx: Int,    
+    ref_cfg_idx: Int,
     ref_market_state_idx: Int,
     in_session_idx: Int,
     ou_session_idx: Int,
@@ -29,7 +25,6 @@ pub type Action {
 }
 
 pub type PlatformConfig {
-  tk_pp: TupleAsset,
   withdraw_init: ScriptHash,
   withdraw_award: ScriptHash,
   withdraw_redeem: ScriptHash,
@@ -83,8 +78,8 @@ pub type SessionDatum {
   // -> [1000, 2000, 4000]
   ticket_options: List<Int>,
   max_ticket_count_per_option: Int,
-  ticket_price: Lovelace,  
+  ticket_price: Lovelace,
   session_time: Interval<Int>,
   result_params: Option<ResultParams>,
-  ticket_win: Option<TicketWin>,  
+  ticket_win: Option<TicketWin>,
 }
