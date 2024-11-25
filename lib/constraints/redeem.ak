@@ -50,16 +50,17 @@ pub fn constraints(
             }
           },
         )
-
+  
   let currenct_volume =
     in_session_val
       |> assets.quantity_of(assets.ada_policy_id, assets.ada_asset_name)
   let remaining_lovelace_qty =
-    currenct_volume - ticket_award_burn_qty * net_award_per_ticket - if is_burn_session_nft {
+    currenct_volume + ticket_award_burn_qty * net_award_per_ticket - if is_burn_session_nft {
       currenct_volume - remaining_award_ticket_qty * net_award_per_ticket
     } else {
       0
     }
+  
   when remaining_lovelace_qty is {
     0 -> True
     _ -> {
@@ -70,7 +71,7 @@ pub fn constraints(
             (
               asset_win,
               net_award_per_ticket,
-              remaining_award_ticket_qty - ticket_award_burn_qty,
+              remaining_award_ticket_qty + ticket_award_burn_qty,
             ),
           ),
         }

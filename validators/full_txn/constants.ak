@@ -75,6 +75,10 @@ pub const ticket_sales = 10_000
 
 pub const ticket_price = 1_000_000
 
+pub const net_award_per_ticket = 2_250_000
+pub const organizer_prize = 200_000_000
+pub const remaining_award_ticket_qty = 20_000
+
 pub const user_lovelace = 200_000_000_000
 
 pub const platform_fee = 500
