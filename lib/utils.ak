@@ -135,7 +135,7 @@ pub fn get_transaction_time(validity_range: ValidityRange) -> (Seconds, Seconds)
     lower_bound: IntervalBound { bound_type: Finite(tx_start_time), .. },
     upper_bound: IntervalBound { bound_type: Finite(tx_end_time), .. },
   } = validity_range
-  (tx_start_time / constants.slot_length, tx_end_time / constants.slot_length)
+  (tx_start_time, tx_end_time)
 }
 
 pub fn generate_options(boudaries: List<Int>, prev: Int) -> List<Interval<Int>> {

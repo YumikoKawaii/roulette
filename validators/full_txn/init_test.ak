@@ -1848,7 +1848,3 @@ test fail_init_incorrect_withdraw_rdmr_idx() fail {
     liqwid_init.execute.withdraw(test_constants.tk_cfg, mint_rdmr, withdraw, tx),
   }
 }
-
-test txn_time() {
-  utils.get_transaction_time(interval.between(100, 200)) == (0, 0)
-}
