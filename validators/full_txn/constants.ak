@@ -62,6 +62,12 @@ pub const wl_ref =
     output_index: 0,
   }
 
+pub const ms_ref = 
+  OutputReference {
+    transaction_id: #"b4971034feee28d07f157faf99b850f856d8da3494c70b19b432cfe690258e29",
+    output_index: 0,
+  }
+
 pub const ticket_per_option = 1_000_000
 
 pub const ticket_sales = 10_000
@@ -74,3 +80,8 @@ pub const platform_fee = 500
 
 pub const basis_base = 10_000
 
+pub const min_ada = 2_000_000
+
+pub const prev_interest_index = 100
+pub const prev_qtoken_rate = (100, 200)
+pub const prev_interest_time = 1718093543000
