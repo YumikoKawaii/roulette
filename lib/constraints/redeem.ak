@@ -52,7 +52,8 @@ pub fn constraints(
               fail
             }
           },
-        )
+        )  
+
   let currenct_volume =
     in_session_val
       |> assets.quantity_of(assets.ada_policy_id, assets.ada_asset_name)
@@ -62,9 +63,11 @@ pub fn constraints(
     } else {
       0
     }
+    
   when remaining_lovelace_qty is {
     0 -> True
     _ -> {
+      
       let expect_ou_session_datum =
         SessionDatum {
           ..in_session_datum,
@@ -72,7 +75,7 @@ pub fn constraints(
             TicketWin(
               asset_win,
               conversion_ratio,
-              remaining_award_ticket_qty - ticket_award_burn_qty,
+              remaining_award_ticket_qty + ticket_award_burn_qty,
             ),
           ),
         }

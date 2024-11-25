@@ -42,10 +42,6 @@ pub const tk_cfg_alter: TupleAsset =
     #"4e677579656e2e4242",
   )
 
-pub const tx_ttl = 15 * 60 * 1000
-
-pub const slot_cfg =
-  SlotConfig { zero_time: 1596059091000, zero_slot: 4492800, slot_length: 1000 }
 
 pub const session_ref =
   OutputReference {
@@ -77,7 +73,7 @@ pub const ticket_sales = 10_000
 
 pub const ticket_price = 1_000_000
 
-pub const net_award_per_ticket = 2_250_000
+pub const conversion_ratio = 2_250_000
 
 pub const organizer_prize = 200_000_000
 
