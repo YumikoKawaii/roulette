@@ -13,7 +13,9 @@ pub const organizer_stkh =
 pub const wl_pkh = #"d48838fee1e840857dab28a04dd88193aec8c297b85d8150c0a1f5cc"
 
 pub const withdraw_init = "withdraw_init"
+
 pub const withdraw_award = "withdraw_award"
+
 pub const withdraw_redeem = "withdraw_redeem"
 
 pub const cfg_ref =
@@ -22,10 +24,10 @@ pub const cfg_ref =
     output_index: 0,
   }
 
-pub const pp_ref =
+pub const cfg_ref_alter =
   OutputReference {
-    transaction_id: #"d95a8085d388b8b2e19efa90ebabd3b7c10a1f9b23050a40207fff6c6217bdd6",
-    output_index: 1,
+    transaction_id: #"d95a8085d388b8b2e19efa90ebabd3b7c10a1f9b23050a40207fff6c6217bdd7",
+    output_index: 0,
   }
 
 pub const tk_cfg: TupleAsset =
@@ -34,16 +36,12 @@ pub const tk_cfg: TupleAsset =
     #"4e677579656e2e4241",
   )
 
-pub const tk_pp: TupleAsset =
+pub const tk_cfg_alter: TupleAsset =
   (
-    #"edfac3284048be242d2e9387b4875dc56f086a7b5dc9eed0ed5bbc9e",
-    #"4e677579656e2e4241",
+    #"87ffcd5882d01aa79809c61ce2b09516b2ec11036219a2bd3527b38b",
+    #"4e677579656e2e4242",
   )
 
-pub const tx_ttl = 15 * 60 * 1000
-
-pub const slot_cfg =
-  SlotConfig { zero_time: 1596059091000, zero_slot: 4492800, slot_length: 1000 }
 
 pub const session_ref =
   OutputReference {
@@ -63,7 +61,7 @@ pub const wl_ref =
     output_index: 0,
   }
 
-pub const ms_ref = 
+pub const ms_ref =
   OutputReference {
     transaction_id: #"b4971034feee28d07f157faf99b850f856d8da3494c70b19b432cfe690258e29",
     output_index: 0,
@@ -75,8 +73,10 @@ pub const ticket_sales = 10_000
 
 pub const ticket_price = 1_000_000
 
-pub const net_award_per_ticket = 2_250_000
+pub const conversion_ratio = 2_250_000
+
 pub const organizer_prize = 200_000_000
+
 pub const remaining_award_ticket_qty = 20_000
 
 pub const user_lovelace = 200_000_000_000
@@ -90,9 +90,13 @@ pub const basis_base = 10_000
 pub const min_ada = 2_000_000
 
 pub const trigger_interest_index = 100
+
 pub const trigger_qtoken_rate = (100, 200)
+
 pub const trigger_interest_time = 1718093543000
 
 pub const award_interest_index = 150
+
 pub const award_qtoken_rate = (105, 205)
+
 pub const award_interest_time = 1718093546000

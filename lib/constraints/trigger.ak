@@ -1,34 +1,34 @@
 use aiken/interval.{Finite, Interval, IntervalBound}
 use cardano/transaction.{
-  InlineDatum, Input, Output, OutputReference, ValidityRange,
+  InlineDatum, Input, Output, ValidityRange,
 }
+use cardano/address.{Address, Script}
+use cardano/assets
 use constants
-use daken/flist
-use daken/time
-use daken/types.{OK} as common_types
-use types.{LiqwidSupply, MarketStateDatum, OracleParams, SessionDatum}
+use types.{LiqwidSupply, MarketStateDatum, ResultParams, SessionDatum}
 use utils
 
 pub fn constraints(
-  out_ref: OutputReference,
-  ou_session_idx: Int,
-  ref_market_state_idx: Int,
-  inputs: List<Input>,
-  outputs: List<Output>,
-  ref_inputs: List<Input>,
+  in_session: Input, 
+  ou_session: Output,
+  ref_ms_idx: Int,
+  ref_inputs: List<Input>,  
   validity_range: ValidityRange,
 ) {
   // find input by out_ref
-  expect Some(Input {
+  expect Input {
     output: Output {
-      address: in_session_addr,
+      address: Address { payment_credential: Script(pid), .. } as in_session_addr,
       value: in_session_val,
       datum: InlineDatum(in_session_dt),
       ..
     },
     ..
-  }) = inputs |> utils.get_input_by_out_ref(out_ref)
+  } = in_session
   expect in_session_datum: SessionDatum = in_session_dt
+
+  // verify Session Verification NFT
+  let valid_utxo = (in_session_val |> assets.quantity_of(pid, in_session_datum.session_token_id)) == 1
 
   expect Interval {
     lower_bound: IntervalBound { bound_type: Finite(in_session_time_low), .. },
@@ -41,42 +41,31 @@ pub fn constraints(
     value: ou_session_val,
     datum: ou_session_dt,
     reference_script: ou_reference_script,
-  } = outputs |> flist.get(ou_session_idx)
+  } = ou_session
 
-  // find market state
-  expect ref_ms: MarketStateDatum =
-    ref_inputs
-      |> utils.get_input_by_idx(
-          ref_market_state_idx,
-          in_session_datum.oracle_policy,
-        )
+  // find market state  
+  expect ref_ms: MarketStateDatum = ref_inputs |> utils.get_input_by_idx(ref_ms_idx, in_session_datum.oracle_policy)
 
-  let oracle_params =
+  let result_params =
     when in_session_datum.predict_type is {
       LiqwidSupply -> {
         let (qtoken_rate_num, qtoken_rate_deno) = ref_ms.qtoken_rate
-        OracleParams {
+        ResultParams {
           interest_index: qtoken_rate_num * constants.basis_base / qtoken_rate_deno,
           interest_time: ref_ms.last_interest_at,
         }
       }
       _ ->
-        OracleParams {
+        ResultParams {
           interest_index: ref_ms.interest_index,
           interest_time: ref_ms.last_interest_at,
         }
     }
 
   let expect_ou_session_dt =
-    SessionDatum { ..in_session_datum, oracle_params: Some(oracle_params) }
+    SessionDatum { ..in_session_datum, result_params: Some(result_params) }
 
-  expect OK((tx_start_time, tx_end_time)) =
-    time.tx_validity_valid_with_boundaries(
-      validity_range,
-      in_session_datum.slot.slot_length,
-      Some(in_session_datum.tx_ttl),
-      True,
-    )
+  let (tx_start_time, tx_end_time) = utils.get_transaction_time(validity_range)
 
   and {
     (tx_start_time >= in_session_time_low)?,
@@ -85,5 +74,6 @@ pub fn constraints(
     (in_session_val == ou_session_val)?,
     (InlineDatum(expect_ou_session_dt) == ou_session_dt)?,
     (ou_reference_script == None)?,
+    valid_utxo?,
   }
 }

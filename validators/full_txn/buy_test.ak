@@ -31,24 +31,18 @@
 //         reference_script: None,
 //       },
 //     }
-//   let unique_key = inputs_hash.blake2b_224_sort_asc([in_user])
+//   let session_token_id = inputs_hash.blake2b_224_sort_asc([in_user])
 //   let session_datum =
 //     SessionDatum {
 //       oracle_policy: ("pid1", "asset1"),
+//       session_token_id,
 //       predict_type: LiqwidSupply,
-//       ticket_options: [
-//         interval.between(0, 10),
-//         interval.between(11, 20),
-//         interval.after(21),
-//       ],
-//       ticket_per_option: test_constants.ticket_per_option,
-//       ticket_price: test_constants.ticket_price,
-//       unique_key,
+//       ticket_options: [10, 20],
+//       max_ticket_count_per_option: 1_000_000,
+//       ticket_price: 1_000_000,
 //       session_time: interval.between(100, 400),
-//       oracle_params: None,
+//       result_params: None,
 //       ticket_win: None,
-//       tx_ttl: 15 * 60 * 1000,
-//       slot: test_constants.slot_cfg,
 //     }
 //   let in_session =
 //     Input {
@@ -59,17 +53,17 @@
 //         value: assets.from_lovelace(constants.min_ada)
 //           |> assets.add(
 //               test_constants.sm_pkh,
-//               utils.get_ticket_token_name(unique_key, 0),
+//               utils.get_ticket_token_name(session_token_id, 0),
 //               test_constants.ticket_per_option,
 //             )
 //           |> assets.add(
 //               test_constants.sm_pkh,
-//               utils.get_ticket_token_name(unique_key, 1),
+//               utils.get_ticket_token_name(session_token_id, 1),
 //               test_constants.ticket_per_option,
 //             )
 //           |> assets.add(
 //               test_constants.sm_pkh,
-//               utils.get_ticket_token_name(unique_key, 2),
+//               utils.get_ticket_token_name(session_token_id, 2),
 //               test_constants.ticket_per_option,
 //             ),
 //         datum: InlineDatum(session_datum),
@@ -86,7 +80,7 @@
 //       )
 //         |> assets.add(
 //             test_constants.sm_pkh,
-//             utils.get_ticket_token_name(unique_key, 0),
+//             utils.get_ticket_token_name(session_token_id, 0),
 //             test_constants.ticket_sales,
 //           ),
 //       datum: NoDatum,
@@ -101,17 +95,17 @@
 //       )
 //         |> assets.add(
 //             test_constants.sm_pkh,
-//             utils.get_ticket_token_name(unique_key, 0),
+//             utils.get_ticket_token_name(session_token_id, 0),
 //             test_constants.ticket_per_option - test_constants.ticket_sales,
 //           )
 //         |> assets.add(
 //             test_constants.sm_pkh,
-//             utils.get_ticket_token_name(unique_key, 1),
+//             utils.get_ticket_token_name(session_token_id, 1),
 //             test_constants.ticket_per_option,
 //           )
 //         |> assets.add(
 //             test_constants.sm_pkh,
-//             utils.get_ticket_token_name(unique_key, 2),
+//             utils.get_ticket_token_name(session_token_id, 2),
 //             test_constants.ticket_per_option,
 //           ),
 //       datum: InlineDatum(session_datum),
@@ -120,7 +114,7 @@
 //   let spend_rdmr =
 //     Buy {
 //       ou_session_idx: 0,
-//       tickets: [utils.get_ticket_token_name(unique_key, 0)],
+//       tickets: [utils.get_ticket_token_name(session_token_id, 0)],
 //     }
 //   let spend_rdmr_data: Data = spend_rdmr
 //   let tx =
@@ -163,26 +157,20 @@
 //         reference_script: None,
 //       },
 //     }
-//   let unique_key = inputs_hash.blake2b_224_sort_asc([in_user])
+//   let session_token_id = inputs_hash.blake2b_224_sort_asc([in_user])
 //   let sc_0 = test_constants.sm_pkh
 //   let sc_1 = "test_constants.sm_pkh"
 //   let session_datum =
 //     SessionDatum {
 //       oracle_policy: ("pid1", "asset1"),
+//       session_token_id,
 //       predict_type: LiqwidSupply,
-//       ticket_options: [
-//         interval.between(0, 10),
-//         interval.between(11, 20),
-//         interval.after(21),
-//       ],
-//       ticket_per_option: test_constants.ticket_per_option,
-//       ticket_price: test_constants.ticket_price,
-//       unique_key,
+//       ticket_options: [10, 20],
+//       max_ticket_count_per_option: 1_000_000,
+//       ticket_price: 1_000_000,
 //       session_time: interval.between(100, 400),
-//       oracle_params: None,
+//       result_params: None,
 //       ticket_win: None,
-//       tx_ttl: 15 * 60 * 1000,
-//       slot: test_constants.slot_cfg,
 //     }
 //   let in_session_0 =
 //     Input {
@@ -193,17 +181,17 @@
 //         value: assets.from_lovelace(constants.min_ada)
 //           |> assets.add(
 //               sc_0,
-//               utils.get_ticket_token_name(unique_key, 0),
+//               utils.get_ticket_token_name(session_token_id, 0),
 //               test_constants.ticket_per_option,
 //             )
 //           |> assets.add(
 //               sc_0,
-//               utils.get_ticket_token_name(unique_key, 1),
+//               utils.get_ticket_token_name(session_token_id, 1),
 //               test_constants.ticket_per_option,
 //             )
 //           |> assets.add(
 //               sc_0,
-//               utils.get_ticket_token_name(unique_key, 2),
+//               utils.get_ticket_token_name(session_token_id, 2),
 //               test_constants.ticket_per_option,
 //             ),
 //         datum: InlineDatum(session_datum),
@@ -220,17 +208,17 @@
 //         value: assets.from_lovelace(constants.min_ada)
 //           |> assets.add(
 //               sc_1,
-//               utils.get_ticket_token_name(unique_key, 0),
+//               utils.get_ticket_token_name(session_token_id, 0),
 //               test_constants.ticket_per_option,
 //             )
 //           |> assets.add(
 //               sc_1,
-//               utils.get_ticket_token_name(unique_key, 1),
+//               utils.get_ticket_token_name(session_token_id, 1),
 //               test_constants.ticket_per_option,
 //             )
 //           |> assets.add(
 //               sc_1,
-//               utils.get_ticket_token_name(unique_key, 2),
+//               utils.get_ticket_token_name(session_token_id, 2),
 //               test_constants.ticket_per_option,
 //             ),
 //         datum: InlineDatum(session_datum),
@@ -247,12 +235,12 @@
 //       )
 //         |> assets.add(
 //             sc_0,
-//             utils.get_ticket_token_name(unique_key, 0),
+//             utils.get_ticket_token_name(session_token_id, 0),
 //             test_constants.ticket_sales,
 //           )
 //         |> assets.add(
 //             sc_1,
-//             utils.get_ticket_token_name(unique_key, 1),
+//             utils.get_ticket_token_name(session_token_id, 1),
 //             test_constants.ticket_sales,
 //           ),
 //       datum: NoDatum,
@@ -267,17 +255,17 @@
 //       )
 //         |> assets.add(
 //             sc_0,
-//             utils.get_ticket_token_name(unique_key, 0),
+//             utils.get_ticket_token_name(session_token_id, 0),
 //             test_constants.ticket_per_option - test_constants.ticket_sales,
 //           )
 //         |> assets.add(
 //             sc_0,
-//             utils.get_ticket_token_name(unique_key, 1),
+//             utils.get_ticket_token_name(session_token_id, 1),
 //             test_constants.ticket_per_option,
 //           )
 //         |> assets.add(
 //             sc_0,
-//             utils.get_ticket_token_name(unique_key, 2),
+//             utils.get_ticket_token_name(session_token_id, 2),
 //             test_constants.ticket_per_option,
 //           ),
 //       datum: InlineDatum(session_datum),
@@ -292,17 +280,17 @@
 //       )
 //         |> assets.add(
 //             sc_1,
-//             utils.get_ticket_token_name(unique_key, 0),
+//             utils.get_ticket_token_name(session_token_id, 0),
 //             test_constants.ticket_per_option,
 //           )
 //         |> assets.add(
 //             sc_1,
-//             utils.get_ticket_token_name(unique_key, 1),
+//             utils.get_ticket_token_name(session_token_id, 1),
 //             test_constants.ticket_per_option - test_constants.ticket_sales,
 //           )
 //         |> assets.add(
 //             sc_1,
-//             utils.get_ticket_token_name(unique_key, 2),
+//             utils.get_ticket_token_name(session_token_id, 2),
 //             test_constants.ticket_per_option,
 //           ),
 //       datum: InlineDatum(session_datum),
@@ -311,13 +299,13 @@
 //   let spend_rdmr_0 =
 //     Buy {
 //       ou_session_idx: 0,
-//       tickets: [utils.get_ticket_token_name(unique_key, 0)],
+//       tickets: [utils.get_ticket_token_name(session_token_id, 0)],
 //     }
 //   let spend_rdmr_0_data: Data = spend_rdmr_0
 //   let spend_rdmr_1 =
 //     Buy {
 //       ou_session_idx: 1,
-//       tickets: [utils.get_ticket_token_name(unique_key, 1)],
+//       tickets: [utils.get_ticket_token_name(session_token_id, 1)],
 //     }
 //   let spend_rdmr_1_data: Data = spend_rdmr_1
 //   let tx =
@@ -360,6 +348,7 @@
 //   }
 // }
 
+// // fail_buy_ticket_mismatch_ticket_sales
 // test fail_buy_ticket_mismatch_ticket_sales() fail {
 //   // Inputs  
 //   let in_user =
@@ -372,24 +361,18 @@
 //         reference_script: None,
 //       },
 //     }
-//   let unique_key = inputs_hash.blake2b_224_sort_asc([in_user])
+//   let session_token_id = inputs_hash.blake2b_224_sort_asc([in_user])
 //   let session_datum =
 //     SessionDatum {
 //       oracle_policy: ("pid1", "asset1"),
+//       session_token_id,
 //       predict_type: LiqwidSupply,
-//       ticket_options: [
-//         interval.between(0, 10),
-//         interval.between(11, 20),
-//         interval.after(21),
-//       ],
-//       ticket_per_option: test_constants.ticket_per_option,
-//       ticket_price: test_constants.ticket_price,
-//       unique_key,
+//       ticket_options: [10, 20],
+//       max_ticket_count_per_option: 1_000_000,
+//       ticket_price: 1_000_000,
 //       session_time: interval.between(100, 400),
-//       oracle_params: None,
+//       result_params: None,
 //       ticket_win: None,
-//       tx_ttl: 15 * 60 * 1000,
-//       slot: test_constants.slot_cfg,
 //     }
 //   let in_session =
 //     Input {
@@ -400,17 +383,17 @@
 //         value: assets.from_lovelace(constants.min_ada)
 //           |> assets.add(
 //               test_constants.sm_pkh,
-//               utils.get_ticket_token_name(unique_key, 0),
+//               utils.get_ticket_token_name(session_token_id, 0),
 //               test_constants.ticket_per_option,
 //             )
 //           |> assets.add(
 //               test_constants.sm_pkh,
-//               utils.get_ticket_token_name(unique_key, 1),
+//               utils.get_ticket_token_name(session_token_id, 1),
 //               test_constants.ticket_per_option,
 //             )
 //           |> assets.add(
 //               test_constants.sm_pkh,
-//               utils.get_ticket_token_name(unique_key, 2),
+//               utils.get_ticket_token_name(session_token_id, 2),
 //               test_constants.ticket_per_option,
 //             ),
 //         datum: InlineDatum(session_datum),
@@ -423,11 +406,11 @@
 //     Output {
 //       address: address.from_verification_key(test_constants.wl_pkh),
 //       value: assets.from_lovelace(
-//         test_constants.user_lovelace - test_constants.ticket_sales * test_constants.ticket_price + 10_000,
+//         test_constants.user_lovelace - test_constants.ticket_sales * test_constants.ticket_price,
 //       )
 //         |> assets.add(
 //             test_constants.sm_pkh,
-//             utils.get_ticket_token_name(unique_key, 0),
+//             utils.get_ticket_token_name(session_token_id, 0),
 //             test_constants.ticket_sales,
 //           ),
 //       datum: NoDatum,
@@ -438,21 +421,21 @@
 //       address: address.from_script(test_constants.sm_pkh)
 //         |> address.with_delegation_key(test_constants.organizer_stkh),
 //       value: assets.from_lovelace(
-//         constants.min_ada + test_constants.ticket_sales * test_constants.ticket_price - 10_000,
+//         constants.min_ada + test_constants.ticket_sales * test_constants.ticket_price,
 //       )
 //         |> assets.add(
 //             test_constants.sm_pkh,
-//             utils.get_ticket_token_name(unique_key, 0),
-//             test_constants.ticket_per_option - test_constants.ticket_sales,
+//             utils.get_ticket_token_name(session_token_id, 0),
+//             test_constants.ticket_per_option - test_constants.ticket_sales - 100,
 //           )
 //         |> assets.add(
 //             test_constants.sm_pkh,
-//             utils.get_ticket_token_name(unique_key, 1),
+//             utils.get_ticket_token_name(session_token_id, 1),
 //             test_constants.ticket_per_option,
 //           )
 //         |> assets.add(
 //             test_constants.sm_pkh,
-//             utils.get_ticket_token_name(unique_key, 2),
+//             utils.get_ticket_token_name(session_token_id, 2),
 //             test_constants.ticket_per_option,
 //           ),
 //       datum: InlineDatum(session_datum),
@@ -461,7 +444,7 @@
 //   let spend_rdmr =
 //     Buy {
 //       ou_session_idx: 0,
-//       tickets: [utils.get_ticket_token_name(unique_key, 0)],
+//       tickets: [utils.get_ticket_token_name(session_token_id, 0)],
 //     }
 //   let spend_rdmr_data: Data = spend_rdmr
 //   let tx =
@@ -491,7 +474,7 @@
 //     tx,
 //   )
 // }
-
+// // fail_buy_ticket_session_datum_change
 // test fail_buy_ticket_session_datum_change() fail {
 //   // Inputs  
 //   let in_user =
@@ -504,24 +487,18 @@
 //         reference_script: None,
 //       },
 //     }
-//   let unique_key = inputs_hash.blake2b_224_sort_asc([in_user])
+//   let session_token_id = inputs_hash.blake2b_224_sort_asc([in_user])
 //   let session_datum =
 //     SessionDatum {
 //       oracle_policy: ("pid1", "asset1"),
+//       session_token_id,
 //       predict_type: LiqwidSupply,
-//       ticket_options: [
-//         interval.between(0, 10),
-//         interval.between(11, 20),
-//         interval.after(21),
-//       ],
-//       ticket_per_option: test_constants.ticket_per_option,
-//       ticket_price: test_constants.ticket_price,
-//       unique_key,
+//       ticket_options: [10, 20],
+//       max_ticket_count_per_option: 1_000_000,
+//       ticket_price: 1_000_000,
 //       session_time: interval.between(100, 400),
-//       oracle_params: None,
+//       result_params: None,
 //       ticket_win: None,
-//       tx_ttl: 15 * 60 * 1000,
-//       slot: test_constants.slot_cfg,
 //     }
 //   let in_session =
 //     Input {
@@ -532,20 +509,25 @@
 //         value: assets.from_lovelace(constants.min_ada)
 //           |> assets.add(
 //               test_constants.sm_pkh,
-//               utils.get_ticket_token_name(unique_key, 0),
+//               utils.get_ticket_token_name(session_token_id, 0),
 //               test_constants.ticket_per_option,
 //             )
 //           |> assets.add(
 //               test_constants.sm_pkh,
-//               utils.get_ticket_token_name(unique_key, 1),
+//               utils.get_ticket_token_name(session_token_id, 1),
 //               test_constants.ticket_per_option,
 //             )
 //           |> assets.add(
 //               test_constants.sm_pkh,
-//               utils.get_ticket_token_name(unique_key, 2),
+//               utils.get_ticket_token_name(session_token_id, 2),
 //               test_constants.ticket_per_option,
 //             ),
-//         datum: InlineDatum(session_datum),
+//         datum: InlineDatum(
+//             SessionDatum{
+//                 ..session_datum,
+//                 ticket_price: 123456,
+//             }
+//         ),
 //         reference_script: None,
 //       },
 //     }
@@ -559,7 +541,7 @@
 //       )
 //         |> assets.add(
 //             test_constants.sm_pkh,
-//             utils.get_ticket_token_name(unique_key, 0),
+//             utils.get_ticket_token_name(session_token_id, 0),
 //             test_constants.ticket_sales,
 //           ),
 //       datum: NoDatum,
@@ -574,31 +556,26 @@
 //       )
 //         |> assets.add(
 //             test_constants.sm_pkh,
-//             utils.get_ticket_token_name(unique_key, 0),
+//             utils.get_ticket_token_name(session_token_id, 0),
 //             test_constants.ticket_per_option - test_constants.ticket_sales,
 //           )
 //         |> assets.add(
 //             test_constants.sm_pkh,
-//             utils.get_ticket_token_name(unique_key, 1),
+//             utils.get_ticket_token_name(session_token_id, 1),
 //             test_constants.ticket_per_option,
 //           )
 //         |> assets.add(
 //             test_constants.sm_pkh,
-//             utils.get_ticket_token_name(unique_key, 2),
+//             utils.get_ticket_token_name(session_token_id, 2),
 //             test_constants.ticket_per_option,
 //           ),
-//       datum: InlineDatum(
-//         SessionDatum {
-//           ..session_datum,
-//           ticket_price: test_constants.ticket_price - 10_000,
-//         },
-//       ),
+//       datum: InlineDatum(session_datum),
 //       reference_script: None,
 //     }
 //   let spend_rdmr =
 //     Buy {
 //       ou_session_idx: 0,
-//       tickets: [utils.get_ticket_token_name(unique_key, 0)],
+//       tickets: [utils.get_ticket_token_name(session_token_id, 0)],
 //     }
 //   let spend_rdmr_data: Data = spend_rdmr
 //   let tx =
@@ -628,7 +605,7 @@
 //     tx,
 //   )
 // }
-
+// // fail_buy_ticket_after_session_time_lowerbound
 // test fail_buy_ticket_after_session_time_lowerbound() fail {
 //   // Inputs  
 //   let in_user =
@@ -641,24 +618,18 @@
 //         reference_script: None,
 //       },
 //     }
-//   let unique_key = inputs_hash.blake2b_224_sort_asc([in_user])
+//   let session_token_id = inputs_hash.blake2b_224_sort_asc([in_user])
 //   let session_datum =
 //     SessionDatum {
 //       oracle_policy: ("pid1", "asset1"),
+//       session_token_id,
 //       predict_type: LiqwidSupply,
-//       ticket_options: [
-//         interval.between(0, 10),
-//         interval.between(11, 20),
-//         interval.after(21),
-//       ],
-//       ticket_per_option: test_constants.ticket_per_option,
-//       ticket_price: test_constants.ticket_price,
-//       unique_key,
+//       ticket_options: [10, 20],
+//       max_ticket_count_per_option: 1_000_000,
+//       ticket_price: 1_000_000,
 //       session_time: interval.between(100, 400),
-//       oracle_params: None,
+//       result_params: None,
 //       ticket_win: None,
-//       tx_ttl: 15 * 60 * 1000,
-//       slot: test_constants.slot_cfg,
 //     }
 //   let in_session =
 //     Input {
@@ -669,17 +640,17 @@
 //         value: assets.from_lovelace(constants.min_ada)
 //           |> assets.add(
 //               test_constants.sm_pkh,
-//               utils.get_ticket_token_name(unique_key, 0),
+//               utils.get_ticket_token_name(session_token_id, 0),
 //               test_constants.ticket_per_option,
 //             )
 //           |> assets.add(
 //               test_constants.sm_pkh,
-//               utils.get_ticket_token_name(unique_key, 1),
+//               utils.get_ticket_token_name(session_token_id, 1),
 //               test_constants.ticket_per_option,
 //             )
 //           |> assets.add(
 //               test_constants.sm_pkh,
-//               utils.get_ticket_token_name(unique_key, 2),
+//               utils.get_ticket_token_name(session_token_id, 2),
 //               test_constants.ticket_per_option,
 //             ),
 //         datum: InlineDatum(session_datum),
@@ -696,7 +667,7 @@
 //       )
 //         |> assets.add(
 //             test_constants.sm_pkh,
-//             utils.get_ticket_token_name(unique_key, 0),
+//             utils.get_ticket_token_name(session_token_id, 0),
 //             test_constants.ticket_sales,
 //           ),
 //       datum: NoDatum,
@@ -711,17 +682,17 @@
 //       )
 //         |> assets.add(
 //             test_constants.sm_pkh,
-//             utils.get_ticket_token_name(unique_key, 0),
+//             utils.get_ticket_token_name(session_token_id, 0),
 //             test_constants.ticket_per_option - test_constants.ticket_sales,
 //           )
 //         |> assets.add(
 //             test_constants.sm_pkh,
-//             utils.get_ticket_token_name(unique_key, 1),
+//             utils.get_ticket_token_name(session_token_id, 1),
 //             test_constants.ticket_per_option,
 //           )
 //         |> assets.add(
 //             test_constants.sm_pkh,
-//             utils.get_ticket_token_name(unique_key, 2),
+//             utils.get_ticket_token_name(session_token_id, 2),
 //             test_constants.ticket_per_option,
 //           ),
 //       datum: InlineDatum(session_datum),
@@ -730,7 +701,7 @@
 //   let spend_rdmr =
 //     Buy {
 //       ou_session_idx: 0,
-//       tickets: [utils.get_ticket_token_name(unique_key, 0)],
+//       tickets: [utils.get_ticket_token_name(session_token_id, 0)],
 //     }
 //   let spend_rdmr_data: Data = spend_rdmr
 //   let tx =
@@ -742,7 +713,7 @@
 //       mint: assets.zero,
 //       certificates: [],
 //       withdrawals: [],
-//       validity_range: interval.between(125, 150),
+//       validity_range: interval.between(100, 125),
 //       extra_signatories: [],
 //       redeemers: [Pair(Spend(test_constants.session_ref), spend_rdmr_data)],
 //       datums: dict.empty,
@@ -760,7 +731,7 @@
 //     tx,
 //   )
 // }
-
+// // fail_buy_ticket_incorrect_ou_session_idx
 // test fail_buy_ticket_incorrect_ou_session_idx() fail {
 //   // Inputs  
 //   let in_user =
@@ -773,24 +744,18 @@
 //         reference_script: None,
 //       },
 //     }
-//   let unique_key = inputs_hash.blake2b_224_sort_asc([in_user])
+//   let session_token_id = inputs_hash.blake2b_224_sort_asc([in_user])
 //   let session_datum =
 //     SessionDatum {
 //       oracle_policy: ("pid1", "asset1"),
+//       session_token_id,
 //       predict_type: LiqwidSupply,
-//       ticket_options: [
-//         interval.between(0, 10),
-//         interval.between(11, 20),
-//         interval.after(21),
-//       ],
-//       ticket_per_option: test_constants.ticket_per_option,
-//       ticket_price: test_constants.ticket_price,
-//       unique_key,
+//       ticket_options: [10, 20],
+//       max_ticket_count_per_option: 1_000_000,
+//       ticket_price: 1_000_000,
 //       session_time: interval.between(100, 400),
-//       oracle_params: None,
+//       result_params: None,
 //       ticket_win: None,
-//       tx_ttl: 15 * 60 * 1000,
-//       slot: test_constants.slot_cfg,
 //     }
 //   let in_session =
 //     Input {
@@ -801,17 +766,17 @@
 //         value: assets.from_lovelace(constants.min_ada)
 //           |> assets.add(
 //               test_constants.sm_pkh,
-//               utils.get_ticket_token_name(unique_key, 0),
+//               utils.get_ticket_token_name(session_token_id, 0),
 //               test_constants.ticket_per_option,
 //             )
 //           |> assets.add(
 //               test_constants.sm_pkh,
-//               utils.get_ticket_token_name(unique_key, 1),
+//               utils.get_ticket_token_name(session_token_id, 1),
 //               test_constants.ticket_per_option,
 //             )
 //           |> assets.add(
 //               test_constants.sm_pkh,
-//               utils.get_ticket_token_name(unique_key, 2),
+//               utils.get_ticket_token_name(session_token_id, 2),
 //               test_constants.ticket_per_option,
 //             ),
 //         datum: InlineDatum(session_datum),
@@ -828,7 +793,7 @@
 //       )
 //         |> assets.add(
 //             test_constants.sm_pkh,
-//             utils.get_ticket_token_name(unique_key, 0),
+//             utils.get_ticket_token_name(session_token_id, 0),
 //             test_constants.ticket_sales,
 //           ),
 //       datum: NoDatum,
@@ -843,17 +808,17 @@
 //       )
 //         |> assets.add(
 //             test_constants.sm_pkh,
-//             utils.get_ticket_token_name(unique_key, 0),
+//             utils.get_ticket_token_name(session_token_id, 0),
 //             test_constants.ticket_per_option - test_constants.ticket_sales,
 //           )
 //         |> assets.add(
 //             test_constants.sm_pkh,
-//             utils.get_ticket_token_name(unique_key, 1),
+//             utils.get_ticket_token_name(session_token_id, 1),
 //             test_constants.ticket_per_option,
 //           )
 //         |> assets.add(
 //             test_constants.sm_pkh,
-//             utils.get_ticket_token_name(unique_key, 2),
+//             utils.get_ticket_token_name(session_token_id, 2),
 //             test_constants.ticket_per_option,
 //           ),
 //       datum: InlineDatum(session_datum),
@@ -862,7 +827,7 @@
 //   let spend_rdmr =
 //     Buy {
 //       ou_session_idx: 1,
-//       tickets: [utils.get_ticket_token_name(unique_key, 0)],
+//       tickets: [utils.get_ticket_token_name(session_token_id, 0)],
 //     }
 //   let spend_rdmr_data: Data = spend_rdmr
 //   let tx =
@@ -892,7 +857,7 @@
 //     tx,
 //   )
 // }
-
+// // fail_buy_ticket_incorrect_ticket_name
 // test fail_buy_ticket_incorrect_ticket_name() fail {
 //   // Inputs  
 //   let in_user =
@@ -905,24 +870,18 @@
 //         reference_script: None,
 //       },
 //     }
-//   let unique_key = inputs_hash.blake2b_224_sort_asc([in_user])
+//   let session_token_id = inputs_hash.blake2b_224_sort_asc([in_user])
 //   let session_datum =
 //     SessionDatum {
 //       oracle_policy: ("pid1", "asset1"),
+//       session_token_id,
 //       predict_type: LiqwidSupply,
-//       ticket_options: [
-//         interval.between(0, 10),
-//         interval.between(11, 20),
-//         interval.after(21),
-//       ],
-//       ticket_per_option: test_constants.ticket_per_option,
-//       ticket_price: test_constants.ticket_price,
-//       unique_key,
+//       ticket_options: [10, 20],
+//       max_ticket_count_per_option: 1_000_000,
+//       ticket_price: 1_000_000,
 //       session_time: interval.between(100, 400),
-//       oracle_params: None,
+//       result_params: None,
 //       ticket_win: None,
-//       tx_ttl: 15 * 60 * 1000,
-//       slot: test_constants.slot_cfg,
 //     }
 //   let in_session =
 //     Input {
@@ -933,17 +892,17 @@
 //         value: assets.from_lovelace(constants.min_ada)
 //           |> assets.add(
 //               test_constants.sm_pkh,
-//               utils.get_ticket_token_name(unique_key, 0),
+//               utils.get_ticket_token_name(session_token_id, 0),
 //               test_constants.ticket_per_option,
 //             )
 //           |> assets.add(
 //               test_constants.sm_pkh,
-//               utils.get_ticket_token_name(unique_key, 1),
+//               utils.get_ticket_token_name(session_token_id, 1),
 //               test_constants.ticket_per_option,
 //             )
 //           |> assets.add(
 //               test_constants.sm_pkh,
-//               utils.get_ticket_token_name(unique_key, 2),
+//               utils.get_ticket_token_name(session_token_id, 2),
 //               test_constants.ticket_per_option,
 //             ),
 //         datum: InlineDatum(session_datum),
@@ -960,7 +919,7 @@
 //       )
 //         |> assets.add(
 //             test_constants.sm_pkh,
-//             utils.get_ticket_token_name(unique_key, 0),
+//             utils.get_ticket_token_name(session_token_id, 0),
 //             test_constants.ticket_sales,
 //           ),
 //       datum: NoDatum,
@@ -975,17 +934,17 @@
 //       )
 //         |> assets.add(
 //             test_constants.sm_pkh,
-//             utils.get_ticket_token_name(unique_key, 0),
+//             utils.get_ticket_token_name(session_token_id, 0),
 //             test_constants.ticket_per_option - test_constants.ticket_sales,
 //           )
 //         |> assets.add(
 //             test_constants.sm_pkh,
-//             utils.get_ticket_token_name(unique_key, 1),
+//             utils.get_ticket_token_name(session_token_id, 1),
 //             test_constants.ticket_per_option,
 //           )
 //         |> assets.add(
 //             test_constants.sm_pkh,
-//             utils.get_ticket_token_name(unique_key, 2),
+//             utils.get_ticket_token_name(session_token_id, 2),
 //             test_constants.ticket_per_option,
 //           ),
 //       datum: InlineDatum(session_datum),
@@ -994,7 +953,7 @@
 //   let spend_rdmr =
 //     Buy {
 //       ou_session_idx: 0,
-//       tickets: [utils.get_ticket_token_name(unique_key, 1)],
+//       tickets: ["utils.get_ticket_token_name(session_token_id, 0)"],
 //     }
 //   let spend_rdmr_data: Data = spend_rdmr
 //   let tx =

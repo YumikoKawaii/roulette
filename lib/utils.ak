@@ -1,17 +1,18 @@
 use aiken/collection/list
 use aiken/collection/pairs
 use aiken/crypto
-use aiken/interval.{Finite, Interval, IntervalBound, PositiveInfinity}
+use aiken/interval.{Finite, Interval, IntervalBound, IntervalBoundType, PositiveInfinity}
 use aiken/primitive/bytearray
 use cardano/address.{Credential}
 use cardano/assets.{AssetName}
-use cardano/transaction.{InlineDatum, Input, Output, OutputReference, Withdraw}
+use cardano/transaction.{InlineDatum, Input, Output, OutputReference, Withdraw, ValidityRange}
 use constants
 use daken/convert
 use daken/flist
 use daken/inputs_hash
-use daken/types.{Basis, Redeemers, TupleAsset} as daken_types
-use types.{OracleParams}
+use daken/types.{Redeemers, TupleAsset} as daken_types
+use daken/time.{Seconds}
+use types.{ResultParams}
 
 pub fn get_input_by_idx(
   ref_inputs: List<Input>,
@@ -51,94 +52,50 @@ pub fn require_withdraw_idx(
   expect_rdmr: Data,
 ) {
   when rdmrs |> pairs.get_all(Withdraw(wd)) is {
-    [] -> fail @"not found mint redeemer"
+    [] -> fail @"not found withdraw redeemer"
     [_, ..] as f -> (flist.get(f, idx) == expect_rdmr)?
   }
 }
 
 pub fn calculate_apy(
-  trigger_params: OracleParams,
-  award_params: OracleParams,
+  trigger_params: ResultParams,
+  award_params: ResultParams,
 ) -> Int {
   let n =
     ( award_params.interest_index - trigger_params.interest_index ) * constants.year_in_ms
   let d =
     trigger_params.interest_index * (
       award_params.interest_time - trigger_params.interest_time
-    )  
+    )
   n * constants.basis_base / d
 }
 
 pub fn is_valid_range(
-  self: List<Interval<Basis>>,
-  unique_key: ByteArray,
+  self: List<Int>,
+  session_token_id: ByteArray,
 ) -> (Bool, List<AssetName>) {
-  self |> do_check_valid_range(unique_key, 0, 0, [])
+  self |> do_check_valid_range(session_token_id, 0, 0)
 }
 
 fn do_check_valid_range(
-  self: List<Interval<Basis>>,
-  unique_key: ByteArray,
+  self: List<Int>,
+  session_token_id: ByteArray,
   idx: Int,
-  pre_end: Int,
-  options: List<AssetName>,
+  prev: Int,
 ) -> (Bool, List<AssetName>) {
   when self is {
-    [] -> (pre_end > 0, options)
-    [x, ..rest] -> {
-      let Interval {
-        lower_bound: IntervalBound {
-          bound_type: start,
-          is_inclusive: start_is_inclusive,
-        },
-        upper_bound: IntervalBound {
-          bound_type: end,
-          is_inclusive: end_is_inclusive,
-        },
-      } = x
-
-      let st_valid =
-        if pre_end <= 0 {
-          when start is {
-            Finite(v) -> v == 0
-            _ -> False
-          }
-        } else {
-          when start is {
-            Finite(v) -> v == pre_end + 1
-            _ -> False
-          }
-        }
-
-      let (next_pre_end, nd_valid) =
-        if rest == [] {
-          when end is {
-            PositiveInfinity -> (pre_end, True)
-            _ -> (pre_end, False)
-          }
-        } else {
-          when end is {
-            Finite(v) -> (v, v > pre_end)
-            _ -> (pre_end, False)
-          }
-        }
-      if and {
-        (start_is_inclusive == True)?,
-        (end_is_inclusive == True)?,
-        st_valid?,
-        nd_valid?,
-      } {
-        do_check_valid_range(
-          rest,
-          unique_key,
-          idx + 1,
-          next_pre_end,
-          [get_ticket_token_name(unique_key, idx), ..options],
+    [] -> (prev > 0, [get_ticket_token_name(session_token_id, idx)])
+    [x, ..rest] ->
+      if x > prev {
+        let (rcs_bool, opts) =
+          do_check_valid_range(rest, session_token_id, idx + 1, x)
+        (
+          True && rcs_bool,
+          [get_ticket_token_name(session_token_id, idx), ..opts],
         )
       } else {
-        (False, [get_ticket_token_name(unique_key, idx), ..options])
+        (False, [])
       }
-    }
   }
 }
 
@@ -171,4 +128,28 @@ pub fn get_input_by_out_ref(
           }
         },
       )
+}
+
+pub fn get_transaction_time(validity_range: ValidityRange) -> (Seconds, Seconds) {
+  expect Interval {
+    lower_bound: IntervalBound { bound_type: Finite(tx_start_time), .. },
+    upper_bound: IntervalBound { bound_type: Finite(tx_end_time), .. },
+  } = validity_range
+  (tx_start_time, tx_end_time)
+}
+
+pub fn generate_options(boudaries: List<Int>, prev: Int) -> List<Interval<Int>> {
+  when boudaries is {
+    [] -> [generate_option(Finite(prev), PositiveInfinity, True)]
+    [x, ..rest] -> {
+      [generate_option(Finite(prev), Finite(x), False), ..generate_options(rest, x)]
+    }
+  }
+}
+
+fn generate_option(from: IntervalBoundType<Int>, to: IntervalBoundType<Int>, is_upper_inclusive: Bool) -> Interval<Int> {
+  Interval{
+    lower_bound: IntervalBound {bound_type: from, is_inclusive: True},
+    upper_bound: IntervalBound {bound_type: to, is_inclusive: is_upper_inclusive},
+  }
 }
