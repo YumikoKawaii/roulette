@@ -36,8 +36,7 @@ pub fn constraints(
   expect in_session_datum: SessionDatum = in_session_dt
 
   // verify Session Verification NFT
-  let session_verification_nft =
-    in_session_val |> assets.quantity_of(pid, in_session_datum.session_token_id)
+  let valid_utxo = (in_session_val |> assets.quantity_of(pid, in_session_datum.session_token_id)) == 1
 
   expect Interval {
     upper_bound: IntervalBound { bound_type: Finite(session_time_hi), .. },
@@ -124,6 +123,7 @@ pub fn constraints(
       ..in_session_datum,
       result_params: Some(award_result_params),
       ticket_win: Some(TicketWin { asset_win, conversion_ratio }),
+      organizer_conversion_ratio: Some(organizer_prize),
     }
   let expect_ou_session_val =
     in_session_val
@@ -177,6 +177,6 @@ pub fn constraints(
     (ou_sessison_script == None)?,
     valid_fee?,
     (expect_burn_assets == mint_assets)?,
-    (session_verification_nft == 1)?,
+    valid_utxo?,
   }
 }

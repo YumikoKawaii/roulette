@@ -27,7 +27,7 @@ pub fn constraints(
   expect in_session_datum: SessionDatum = in_session_dt
 
   // verify Session Verification NFT
-  let session_verification_nft = in_session_val |> assets.quantity_of(pid, in_session_datum.session_token_id)
+  let valid_utxo = (in_session_val |> assets.quantity_of(pid, in_session_datum.session_token_id)) == 1
 
   expect Interval {
     lower_bound: IntervalBound { bound_type: Finite(in_session_time_low), .. },
@@ -73,6 +73,6 @@ pub fn constraints(
     (in_session_val == ou_session_val)?,
     (InlineDatum(expect_ou_session_dt) == ou_session_dt)?,
     (ou_reference_script == None)?,
-    (session_verification_nft == 1)?,
+    valid_utxo?,
   }
 }
