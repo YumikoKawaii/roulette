@@ -17,13 +17,13 @@ pub fn constraints(
   ou_session: Output,
   ou_fee_idx: Option<Int>,
   outputs: List<Output>,
-  cfg_dt: Data,
-  ms_dt: Data,
+  cfg_dt: Data,  
   mint: Value,
+  ref_ms_idx: Int,
+  ref_inputs: List<Input>,
   validity_range: ValidityRange,
 ) {
-  expect platform_cfg: PlatformConfig = cfg_dt
-  expect ms_datum: MarketStateDatum = ms_dt
+  expect platform_cfg: PlatformConfig = cfg_dt  
   expect Input {
     output: Output {
       address: Address { payment_credential: Script(pid), .. } as in_session_addr,
@@ -34,7 +34,7 @@ pub fn constraints(
     ..
   } = in_session
   expect in_session_datum: SessionDatum = in_session_dt
-
+  expect ms_datum: MarketStateDatum = ref_inputs |> utils.get_input_by_idx(ref_ms_idx, in_session_datum.oracle_policy)
   // verify Session Verification NFT
   let valid_utxo = (in_session_val |> assets.quantity_of(pid, in_session_datum.session_token_id)) == 1
 

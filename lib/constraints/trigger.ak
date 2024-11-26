@@ -11,7 +11,8 @@ use utils
 pub fn constraints(
   in_session: Input, 
   ou_session: Output,
-  ref_ms_dt: Data,
+  ref_ms_idx: Int,
+  ref_inputs: List<Input>,  
   validity_range: ValidityRange,
 ) {
   // find input by out_ref
@@ -42,8 +43,8 @@ pub fn constraints(
     reference_script: ou_reference_script,
   } = ou_session
 
-  // find market state
-  expect ref_ms: MarketStateDatum = ref_ms_dt
+  // find market state  
+  expect ref_ms: MarketStateDatum = ref_inputs |> utils.get_input_by_idx(ref_ms_idx, in_session_datum.oracle_policy)
 
   let result_params =
     when in_session_datum.predict_type is {

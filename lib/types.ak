@@ -11,7 +11,7 @@ pub type Action {
     ref_cfg_idx: Int,
     ref_market_state_idx: Int,    
     ou_session_idx: Int,
-    ou_fee_idx: Int,    
+    ou_fee_idx: Option<Int>,
   }
   Redeem {ou_session_idx: Option<Int>}
 }
