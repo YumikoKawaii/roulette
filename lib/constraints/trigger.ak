@@ -1,23 +1,19 @@
 use aiken/interval.{Finite, Interval, IntervalBound}
 use cardano/transaction.{
-  InlineDatum, Input, Output, OutputReference, ValidityRange,
+  InlineDatum, Input, Output, ValidityRange,
 }
 use constants
-use daken/flist
 use types.{LiqwidSupply, MarketStateDatum, ResultParams, SessionDatum}
 use utils
 
 pub fn constraints(
-  out_ref: OutputReference,
-  ou_session_idx: Int,
-  ref_market_state_idx: Int,
-  inputs: List<Input>,
-  outputs: List<Output>,
-  ref_inputs: List<Input>,
+  in_session: Input, 
+  ou_session: Output,
+  ref_ms_dt: Data,
   validity_range: ValidityRange,
 ) {
   // find input by out_ref
-  expect Some(Input {
+  expect Input {
     output: Output {
       address: in_session_addr,
       value: in_session_val,
@@ -25,7 +21,7 @@ pub fn constraints(
       ..
     },
     ..
-  }) = inputs |> utils.get_input_by_out_ref(out_ref)
+  } = in_session
   expect in_session_datum: SessionDatum = in_session_dt
 
   expect Interval {
@@ -39,15 +35,10 @@ pub fn constraints(
     value: ou_session_val,
     datum: ou_session_dt,
     reference_script: ou_reference_script,
-  } = outputs |> flist.get(ou_session_idx)
+  } = ou_session
 
   // find market state
-  expect ref_ms: MarketStateDatum =
-    ref_inputs
-      |> utils.get_input_by_idx(
-          ref_market_state_idx,
-          in_session_datum.oracle_policy,
-        )
+  expect ref_ms: MarketStateDatum = ref_ms_dt
 
   let result_params =
     when in_session_datum.predict_type is {
