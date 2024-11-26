@@ -2,23 +2,18 @@ use aiken/collection/list
 use aiken/interval.{Finite, Interval, IntervalBound}
 use cardano/address.{Address, Script}
 use cardano/assets.{AssetName}
-use cardano/transaction.{
-  InlineDatum, Input, Output, OutputReference, ValidityRange,
-}
-use daken/flist
+use cardano/transaction.{InlineDatum, Input, Output, ValidityRange}
 use types.{SessionDatum}
 use utils
 
 pub fn constraints(
-  ou_session_idx: Int,
+  in_session: Input,
+  ou_sesison: Output,
   tickets: List<AssetName>,
-  out_ref: OutputReference,
-  inputs: List<Input>,
-  outputs: List<Output>,
   validity_range: ValidityRange,
 ) {
   // find input by out_ref
-  expect Some(Input {
+  expect Input {
     output: Output {
       address: Address { payment_credential: Script(pid), .. } as in_session_addr,
       value: in_session_val,
@@ -26,7 +21,7 @@ pub fn constraints(
       ..
     },
     ..
-  }) = inputs |> utils.get_input_by_out_ref(out_ref)
+  } = in_session
   expect in_session_datum: SessionDatum = in_session_dt
 
   // find output by idx
@@ -35,38 +30,20 @@ pub fn constraints(
     value: ou_session_val,
     datum: InlineDatum(ou_session_dt),
     reference_script: ou_reference_script,
-  } = outputs |> flist.get(ou_session_idx)
+  } = ou_sesison
 
   expect Interval {
     lower_bound: IntervalBound { bound_type: Finite(session_time_low), .. },
     ..
   } = in_session_datum.session_time
-  let sold_ticket_quantity =
-    tickets
-      |> list.foldr(
-          0,
-          fn(a, z) {
-            z + (
-              assets.quantity_of(in_session_val, pid, a) - assets.quantity_of(
-                ou_session_val,
-                pid,
-                a,
-              )
-            )
-          },
-        )
-  let expect_lovelace_quantity =
-    assets.quantity_of(
-      in_session_val,
-      assets.ada_policy_id,
-      assets.ada_asset_name,
-    ) + sold_ticket_quantity * in_session_datum.ticket_price
-  let ou_lovelace_quantity =
-    assets.quantity_of(
-      ou_session_val,
-      assets.ada_policy_id,
-      assets.ada_asset_name,
-    )
+
+  let expect_session_value = tickets |> list.foldr(
+    in_session_val,
+    fn(a, z) {
+      let ticket_qty = assets.quantity_of(in_session_val, pid, a) - assets.quantity_of(ou_session_val,pid,a)
+      z |> assets.add(assets.ada_policy_id, assets.ada_asset_name, ticket_qty * in_session_datum.ticket_price) |> assets.add(pid, a, -ticket_qty)
+    }
+  )   
 
   let (_, tx_end_time) = utils.get_transaction_time(validity_range)
 
@@ -74,7 +51,7 @@ pub fn constraints(
     (in_session_addr == ou_session_addr)?,
     (tx_end_time < session_time_low)?,
     (in_session_dt == ou_session_dt)?,
-    (expect_lovelace_quantity == ou_lovelace_quantity)?,
+    (expect_session_value == ou_session_val)?,
     (ou_reference_script == None)?,
   }
 }

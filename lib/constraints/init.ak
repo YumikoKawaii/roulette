@@ -34,17 +34,20 @@ pub fn constraints(
     session_datum.ticket_options
       |> utils.is_valid_range(expect_session_token_id)
   // calculate expect values
-  let expect_session_tokens = list.foldr(
+  let expect_session_tokens =
+    list.foldr(
       opts,
       assets.zero,
       fn(a, z) {
         assets.add(z, pid, a, session_datum.max_ticket_count_per_option)
       },
     )
-      |> assets.add(pid, expect_session_token_id, 1)    
-  let expect_session_value = expect_session_tokens |> assets.add(assets.ada_policy_id, assets.ada_asset_name, constants.min_ada)      
+      |> assets.add(pid, expect_session_token_id, 1)
+  let expect_session_value =
+    expect_session_tokens
+      |> assets.add(assets.ada_policy_id, assets.ada_asset_name, constants.min_ada)
   let expect_mint_value =
-    expect_session_tokens      
+    expect_session_tokens
       |> assets.add(pid, expect_session_organizer_nft, 1)
   // verify oracle policy
   let valid_oracle_policy =
@@ -54,7 +57,8 @@ pub fn constraints(
     upper_bound: IntervalBound { bound_type: Finite(session_time_hi), .. },
   } = session_datum.session_time
   // verify ticket_price
-  let valid_ticket_price = (session_datum.ticket_price >= platform_cfg.min_ticket_price) && (session_datum.ticket_price % 1_000_000 == 0)
+  let valid_ticket_price =
+    session_datum.ticket_price >= platform_cfg.min_ticket_price && session_datum.ticket_price % 1_000_000 == 0
   and {
     (session_ref_script == None)?,
     valid_oracle_policy?,
@@ -68,6 +72,6 @@ pub fn constraints(
     (expect_mint_value == mint)?,
     (session_datum.result_params == None)?,
     (session_datum.ticket_win == None)?,
-    (session_datum.organizer_conversion_ratio == None)?,    
+    (session_datum.organizer_conversion_ratio == None)?,
   }
 }
