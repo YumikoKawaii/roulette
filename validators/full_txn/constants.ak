@@ -1,5 +1,4 @@
 use cardano/transaction.{OutputReference}
-use daken/time.{SlotConfig}
 use daken/types.{TupleAsset}
 
 pub const sm_pkh = #"f4c9f9c4252d86702c2f4c2e49e6648c7cffe3c8f2b6b7d779788f50"
@@ -11,12 +10,6 @@ pub const organizer_stkh =
   #"e908ea93ce658a210924b3545f53df597a93a1a93325b72de149542b"
 
 pub const wl_pkh = #"d48838fee1e840857dab28a04dd88193aec8c297b85d8150c0a1f5cc"
-
-pub const withdraw_init = "withdraw_init"
-
-pub const withdraw_award = "withdraw_award"
-
-pub const withdraw_redeem = "withdraw_redeem"
 
 pub const cfg_ref =
   OutputReference {
@@ -36,22 +29,9 @@ pub const tk_cfg: TupleAsset =
     #"4e677579656e2e4241",
   )
 
-pub const tk_cfg_alter: TupleAsset =
-  (
-    #"87ffcd5882d01aa79809c61ce2b09516b2ec11036219a2bd3527b38b",
-    #"4e677579656e2e4242",
-  )
-
-
 pub const session_ref =
   OutputReference {
     transaction_id: #"b4971034feee28d07f157faf99b850f856d8743494c70b19b521cfe690258e26",
-    output_index: 0,
-  }
-
-pub const session_ref_alter =
-  OutputReference {
-    transaction_id: #"b4971034feee28d07f157faf99b850f856d8743494c70b19b521cfe690258e28",
     output_index: 0,
   }
 
@@ -71,7 +51,7 @@ pub const ticket_per_option = 1_000_000
 
 pub const ticket_sales = 10_000
 
-pub const ticket_price = 1_000_000
+pub const ticket_price = 10_000_000
 
 pub const conversion_ratio = 2_250_000
 
