@@ -1,4 +1,3 @@
-use aiken/crypto.{ScriptHash}
 use aiken/interval.{Interval}
 use cardano/address.{Address}
 use cardano/assets.{AssetName, Lovelace}

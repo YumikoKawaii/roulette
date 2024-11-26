@@ -2,6 +2,8 @@ use aiken/interval.{Finite, Interval, IntervalBound}
 use cardano/transaction.{
   InlineDatum, Input, Output, ValidityRange,
 }
+use cardano/address.{Address, Script}
+use cardano/assets
 use constants
 use types.{LiqwidSupply, MarketStateDatum, ResultParams, SessionDatum}
 use utils
@@ -15,7 +17,7 @@ pub fn constraints(
   // find input by out_ref
   expect Input {
     output: Output {
-      address: in_session_addr,
+      address: Address { payment_credential: Script(pid), .. } as in_session_addr,
       value: in_session_val,
       datum: InlineDatum(in_session_dt),
       ..
@@ -23,6 +25,9 @@ pub fn constraints(
     ..
   } = in_session
   expect in_session_datum: SessionDatum = in_session_dt
+
+  // verify Session Verification NFT
+  let session_verification_nft = in_session_val |> assets.quantity_of(pid, in_session_datum.session_token_id)
 
   expect Interval {
     lower_bound: IntervalBound { bound_type: Finite(in_session_time_low), .. },
@@ -68,5 +73,6 @@ pub fn constraints(
     (in_session_val == ou_session_val)?,
     (InlineDatum(expect_ou_session_dt) == ou_session_dt)?,
     (ou_reference_script == None)?,
+    (session_verification_nft == 1)?,
   }
 }

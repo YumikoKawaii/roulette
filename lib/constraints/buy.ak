@@ -12,7 +12,6 @@ pub fn constraints(
   tickets: List<AssetName>,
   validity_range: ValidityRange,
 ) {
-  // find input by out_ref
   expect Input {
     output: Output {
       address: Address { payment_credential: Script(pid), .. } as in_session_addr,
@@ -23,14 +22,16 @@ pub fn constraints(
     ..
   } = in_session
   expect in_session_datum: SessionDatum = in_session_dt
-
-  // find output by idx
+    
   expect Output {
     address: ou_session_addr,
     value: ou_session_val,
     datum: InlineDatum(ou_session_dt),
     reference_script: ou_reference_script,
   } = ou_sesison
+
+  // verify Session Verification NFT
+  let session_verification_nft = in_session_val |> assets.quantity_of(pid, in_session_datum.session_token_id)
 
   expect Interval {
     lower_bound: IntervalBound { bound_type: Finite(session_time_low), .. },
@@ -53,5 +54,6 @@ pub fn constraints(
     (in_session_dt == ou_session_dt)?,
     (expect_session_value == ou_session_val)?,
     (ou_reference_script == None)?,
+    (session_verification_nft == 1)?,
   }
 }

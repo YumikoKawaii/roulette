@@ -3,10 +3,9 @@ use aiken/collection/list
 use aiken/interval.{Finite, Interval, IntervalBound}
 use cardano/address.{Address, Script}
 use cardano/assets.{Value}
-use cardano/transaction.{
-  InlineDatum, Input, NoDatum, Output, ValidityRange,
-}
+use cardano/transaction.{InlineDatum, Input, NoDatum, Output, ValidityRange}
 use constants
+use daken/flist
 use types.{
   LiqwidSupply, MarketStateDatum, PlatformConfig, ResultParams, SessionDatum,
   TicketWin,
@@ -16,7 +15,8 @@ use utils
 pub fn constraints(
   in_session: Input,
   ou_session: Output,
-  ou_fee: Output,
+  ou_fee_idx: Option<Int>,
+  outputs: List<Output>,
   cfg_dt: Data,
   ms_dt: Data,
   mint: Value,
@@ -34,6 +34,10 @@ pub fn constraints(
     ..
   } = in_session
   expect in_session_datum: SessionDatum = in_session_dt
+
+  // verify Session Verification NFT
+  let session_verification_nft =
+    in_session_val |> assets.quantity_of(pid, in_session_datum.session_token_id)
 
   expect Interval {
     upper_bound: IntervalBound { bound_type: Finite(session_time_hi), .. },
@@ -94,11 +98,26 @@ pub fn constraints(
       assets.ada_policy_id,
       assets.ada_asset_name,
     ) - constants.min_ada
-  let fee_in_lovelace = total_volume * platform_cfg.fee / constants.basis_base
+  let platform_fee = {
+    let qty = total_volume * platform_cfg.fee / constants.basis_base
+    if qty < constants.min_ada {
+      0
+    } else {
+      qty
+    }
+  }
+
+  let organizer_prize = {
+    let qty = total_volume * platform_cfg.organizer_award / constants.basis_base
+    if qty < constants.min_ada {
+      0
+    } else {
+      qty
+    }
+  }
+
   let conversion_ratio =
-    (
-      total_volume - fee_in_lovelace - total_volume * platform_cfg.organizer_award / constants.basis_base
-    ) / ticket_sales
+    ( total_volume - platform_fee - organizer_prize ) / ticket_sales
 
   let expect_ou_session_datum =
     SessionDatum {
@@ -107,8 +126,8 @@ pub fn constraints(
       ticket_win: Some(TicketWin { asset_win, conversion_ratio }),
     }
   let expect_ou_session_val =
-    assets.from_lovelace(total_volume - fee_in_lovelace + constants.min_ada)
-  // check burn
+    in_session_val
+      |> assets.add(assets.ada_policy_id, assets.ada_asset_name, -platform_fee)
   // find session output by idx
   let Output {
     address: ou_session_addr,
@@ -116,13 +135,26 @@ pub fn constraints(
     datum: ou_session_dt,
     reference_script: ou_sessison_script,
   } = ou_session
-  // find fee output by idx
-  let Output {
-    address: ou_fee_addr,
-    value: ou_fee_val,
-    datum: ou_fee_dt,
-    reference_script: ou_fee_script,
-  } = ou_fee
+
+  let valid_fee =
+    when platform_fee is {
+      0 -> True
+      _ -> {
+        expect Some(idx) = ou_fee_idx
+        let Output {
+          address: ou_fee_addr,
+          value: ou_fee_val,
+          datum: ou_fee_dt,
+          reference_script: ou_fee_script,
+        } = outputs |> flist.get(idx)
+        and {
+          (ou_fee_addr == platform_cfg.fee_addr)?,
+          (ou_fee_val == assets.from_lovelace(platform_fee))?,
+          (ou_fee_dt == NoDatum)?,
+          (ou_fee_script == None)?,
+        }
+      }
+    }
 
   let mint_assets =
     assets.from_asset_list(
@@ -143,10 +175,8 @@ pub fn constraints(
     (InlineDatum(expect_ou_session_datum) == ou_session_dt)?,
     (expect_ou_session_val == ou_sessison_val)?,
     (ou_sessison_script == None)?,
-    (platform_cfg.fee_addr == ou_fee_addr)?,
-    (assets.from_lovelace(fee_in_lovelace) == ou_fee_val)?,
-    (ou_fee_dt == NoDatum)?,
-    (ou_fee_script == None)?,
+    valid_fee?,
     (expect_burn_assets == mint_assets)?,
+    (session_verification_nft == 1)?,
   }
 }
