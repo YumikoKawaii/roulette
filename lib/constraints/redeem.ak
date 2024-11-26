@@ -6,9 +6,8 @@ use daken/flist
 use types.{SessionDatum, TicketWin}
 
 pub fn constraints(
-  in_session_idx: Int,
+  in_session: Input,
   ou_session_idx: Option<Int>,
-  inputs: List<Input>,
   outputs: List<Output>,
   mint: Value,
 ) {
@@ -21,13 +20,10 @@ pub fn constraints(
       ..
     },
     ..
-  } = inputs |> flist.get(in_session_idx)
+  } = in_session
   expect in_session_datum: SessionDatum = in_session_dt
-  expect Some(TicketWin {
-    asset_win,
-    conversion_ratio,
-    remaining_award_ticket_qty,
-  }) = in_session_datum.ticket_win
+  expect Some(TicketWin { asset_win, conversion_ratio: ticket_conversion_ratio }) =
+    in_session_datum.ticket_win
   let (is_burn_session_nft, ticket_award_burn_qty) =
     mint
       |> assets.tokens(pid)
@@ -52,34 +48,24 @@ pub fn constraints(
               fail
             }
           },
-        )  
+        )
 
-  let currenct_volume =
-    in_session_val
-      |> assets.quantity_of(assets.ada_policy_id, assets.ada_asset_name)
-  let remaining_lovelace_qty =
-    currenct_volume + ticket_award_burn_qty * conversion_ratio - if is_burn_session_nft {
-      currenct_volume - remaining_award_ticket_qty * conversion_ratio
+  let ticket_redeem_qty = ticket_award_burn_qty * ticket_conversion_ratio
+  let organizer_award_qty =
+    if is_burn_session_nft {
+      expect Some(v) = in_session_datum.organizer_conversion_ratio
+      v
     } else {
       0
     }
-    
+  let remaining_lovelace_qty =
+    (
+      in_session_val
+        |> assets.quantity_of(assets.ada_policy_id, assets.ada_asset_name)
+    ) - ticket_redeem_qty - organizer_award_qty
   when remaining_lovelace_qty is {
     0 -> True
     _ -> {
-      
-      let expect_ou_session_datum =
-        SessionDatum {
-          ..in_session_datum,
-          ticket_win: Some(
-            TicketWin(
-              asset_win,
-              conversion_ratio,
-              remaining_award_ticket_qty + ticket_award_burn_qty,
-            ),
-          ),
-        }
-
       expect Some(ou_s_idx) = ou_session_idx
       // find output by idx
       let Output {
@@ -92,7 +78,7 @@ pub fn constraints(
       and {
         (in_session_addr == ou_session_addr)?,
         (assets.from_lovelace(remaining_lovelace_qty) == ou_session_val)?,
-        (InlineDatum(expect_ou_session_datum) == ou_session_dt)?,
+        (InlineDatum(in_session_dt) == ou_session_dt)?,
         (ou_reference_script == None)?,
       }
     }

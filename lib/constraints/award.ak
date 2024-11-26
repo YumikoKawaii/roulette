@@ -1,30 +1,29 @@
 use aiken/collection/dict
 use aiken/collection/list
 use aiken/interval.{Finite, Interval, IntervalBound}
-use cardano/assets.{Value}
 use cardano/address.{Address, Script}
-use cardano/transaction.{InlineDatum, Input, NoDatum, Output, ValidityRange}
+use cardano/assets.{Value}
+use cardano/transaction.{
+  InlineDatum, Input, NoDatum, Output, ValidityRange,
+}
 use constants
-use daken/flist
 use types.{
-  LiqwidSupply, MarketStateDatum, ResultParams, PlatformConfig, SessionDatum, TicketWin,
+  LiqwidSupply, MarketStateDatum, PlatformConfig, ResultParams, SessionDatum,
+  TicketWin,
 }
 use utils
 
-pub fn constraints(  
+pub fn constraints(
+  in_session: Input,
+  ou_session: Output,
+  ou_fee: Output,
   cfg_dt: Data,
-  ref_ms_idx: Int,
-  in_session_idx: Int,
-  ou_session_idx: Int,
-  ou_fee_idx: Int,
-  inputs: List<Input>,
-  outputs: List<Output>,
-  ref_inputs: List<Input>,
+  ms_dt: Data,
   mint: Value,
   validity_range: ValidityRange,
 ) {
   expect platform_cfg: PlatformConfig = cfg_dt
-  // find input by idx
+  expect ms_datum: MarketStateDatum = ms_dt
   expect Input {
     output: Output {
       address: Address { payment_credential: Script(pid), .. } as in_session_addr,
@@ -33,13 +32,8 @@ pub fn constraints(
       ..
     },
     ..
-  } = inputs |> flist.get(in_session_idx)
+  } = in_session
   expect in_session_datum: SessionDatum = in_session_dt
-
-  // find market state
-  expect ms_datum: MarketStateDatum =
-    ref_inputs
-      |> utils.get_input_by_idx(ref_ms_idx, in_session_datum.oracle_policy)
 
   expect Interval {
     upper_bound: IntervalBound { bound_type: Finite(session_time_hi), .. },
@@ -61,9 +55,7 @@ pub fn constraints(
           interest_time: ms_datum.last_interest_at,
         }
     }
-  
   let apy = utils.calculate_apy(trigger_result_params, award_result_params)
-  
   let (asset_win, ticket_sales, expect_burn_assets) =
     in_session_datum.ticket_options
       |> utils.generate_options(0)
@@ -72,10 +64,13 @@ pub fn constraints(
           fn(idx, r, z) {
             let (asset_accum, sales_accum, burn_assets_accum) = z
             let asset =
-              utils.get_ticket_token_name(in_session_datum.session_token_id, idx)
+              utils.get_ticket_token_name(
+                in_session_datum.session_token_id,
+                idx,
+              )
             let remain_qty = assets.quantity_of(in_session_val, pid, asset)
-            let sales = in_session_datum.max_ticket_count_per_option - remain_qty            
-  
+            let sales =
+              in_session_datum.max_ticket_count_per_option - remain_qty
             let (a, s) =
               if r |> interval.contains(apy) {
                 if sales > 0 {
@@ -93,7 +88,6 @@ pub fn constraints(
             (a, s, burn_assets_accum |> assets.add(pid, asset, -remain_qty))
           },
         )
-  
   let total_volume =
     assets.quantity_of(
       in_session_val,
@@ -110,32 +104,25 @@ pub fn constraints(
     SessionDatum {
       ..in_session_datum,
       result_params: Some(award_result_params),
-      ticket_win: Some(TicketWin{
-        asset_win,
-        conversion_ratio,
-        remaining_award_ticket_qty: ticket_sales,
-      }),
+      ticket_win: Some(TicketWin { asset_win, conversion_ratio }),
     }
   let expect_ou_session_val =
     assets.from_lovelace(total_volume - fee_in_lovelace + constants.min_ada)
   // check burn
   // find session output by idx
-  expect (
-    Some(Output {
-      address: ou_session_addr,
-      value: ou_sessison_val,
-      datum: ou_session_dt,
-      reference_script: ou_sessison_script,
-    }),
-    tail,
-  ) = outputs |> flist.get_with_tail(ou_session_idx)
+  let Output {
+    address: ou_session_addr,
+    value: ou_sessison_val,
+    datum: ou_session_dt,
+    reference_script: ou_sessison_script,
+  } = ou_session
   // find fee output by idx
   let Output {
     address: ou_fee_addr,
     value: ou_fee_val,
     datum: ou_fee_dt,
     reference_script: ou_fee_script,
-  } = tail |> flist.get(ou_fee_idx)
+  } = ou_fee
 
   let mint_assets =
     assets.from_asset_list(
