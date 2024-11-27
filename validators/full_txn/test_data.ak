@@ -1,5 +1,9 @@
-use cardano/transaction.{OutputReference}
-use daken/types.{TupleAsset}
+use cardano/assets
+use cardano/transaction.{Input, Output, InlineDatum, OutputReference}
+use cardano/address.{Address}
+use daken/types.{TupleAsset} as daken_types
+use types.{PlatformConfig}
+use constants
 
 pub const sm_pkh = #"f4c9f9c4252d86702c2f4c2e49e6648c7cffe3c8f2b6b7d779788f50"
 
@@ -10,6 +14,27 @@ pub const organizer_stkh =
   #"e908ea93ce658a210924b3545f53df597a93a1a93325b72de149542b"
 
 pub const wl_pkh = #"d48838fee1e840857dab28a04dd88193aec8c297b85d8150c0a1f5cc"
+
+pub fn base_cfg() -> Input {
+  Input {
+    output_reference: cfg_ref,
+    output: Output {
+      address: address.from_script(sm_pkh),
+      value: assets.from_lovelace(constants.min_ada)
+        |> assets.add(tk_cfg.1st, tk_cfg.2nd, 1),
+      datum: InlineDatum(
+        PlatformConfig {
+          markets: [("pid1", "asset1"), ("pid2", "asset2")],
+          fee: platform_fee,
+          organizer_award: organizer_award,
+          fee_addr: address.from_verification_key("fee_addr"),
+          min_ticket_price: 5_000_000,
+        },
+      ),
+      reference_script: None,
+    },
+  }
+}
 
 pub const cfg_ref =
   OutputReference {
