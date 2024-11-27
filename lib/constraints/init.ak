@@ -50,8 +50,8 @@ pub fn constraints(
     expect_session_tokens
       |> assets.add(pid, expect_session_organizer_nft, 1)
   // verify oracle policy
-  let valid_oracle_policy =
-    platform_cfg.markets |> list.any(fn(a) { a == session_datum.oracle_policy })
+  // let valid_oracle_policy =
+  //   platform_cfg.markets |> list.any(fn(a) { a == session_datum.oracle_policy })
   expect Interval {
     lower_bound: IntervalBound { bound_type: Finite(session_time_low), .. },
     upper_bound: IntervalBound { bound_type: Finite(session_time_hi), .. },
@@ -61,7 +61,7 @@ pub fn constraints(
     session_datum.ticket_price >= platform_cfg.min_ticket_price && session_datum.ticket_price % 1_000_000 == 0
   and {
     (session_ref_script == None)?,
-    valid_oracle_policy?,
+    // valid_oracle_policy?,
     (session_datum.session_token_id == expect_session_token_id)?,
     valid_options?,
     (list.length(opts) > 1)?,

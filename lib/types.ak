@@ -4,21 +4,21 @@ use cardano/assets.{AssetName, Lovelace}
 use daken/types.{TupleAsset}
 
 pub type Action {
-  Init { ou_session_idx: Int, ref_cfg_idx: Int}
+  Init { ou_session_idx: Int, ref_cfg_idx: Int }
   Buy { ou_session_idx: Int, tickets: List<AssetName> }
   Trigger { ou_session_idx: Int, ref_market_state_idx: Int }
   Award {
     ref_cfg_idx: Int,
-    ref_market_state_idx: Int,    
+    ref_market_state_idx: Int,
     ou_session_idx: Int,
     ou_fee_idx: Option<Int>,
   }
-  Redeem {ou_session_idx: Option<Int>}
+  Redeem { ou_session_idx: Option<Int> }
 }
 
 pub type PlatformConfig {
   // list of tokens supported by liqwid
-  markets: List<TupleAsset>,
+  // markets: List<TupleAsset>,
   // Basic Point, percentage of fee paid to platform  
   fee: Int,
   // Basic Point, percentage of fee paid to organizer  
@@ -58,7 +58,7 @@ pub type ResultParams {
 
 pub type TicketWin {
   asset_win: Option<AssetName>,
-  conversion_ratio: Int,  
+  conversion_ratio: Int,
 }
 
 pub type SessionDatum {

@@ -1,9 +1,9 @@
-use cardano/assets
-use cardano/transaction.{Input, Output, InlineDatum, OutputReference}
 use cardano/address.{Address}
+use cardano/assets
+use cardano/transaction.{InlineDatum, Input, Output, OutputReference}
+use constants
 use daken/types.{TupleAsset} as daken_types
 use types.{PlatformConfig}
-use constants
 
 pub const sm_pkh = #"f4c9f9c4252d86702c2f4c2e49e6648c7cffe3c8f2b6b7d779788f50"
 
@@ -24,9 +24,9 @@ pub fn base_cfg() -> Input {
         |> assets.add(tk_cfg.1st, tk_cfg.2nd, 1),
       datum: InlineDatum(
         PlatformConfig {
-          markets: [("pid1", "asset1"), ("pid2", "asset2")],
+          // markets: [("pid1", "asset1"), ("pid2", "asset2")],
           fee: platform_fee,
-          organizer_award: organizer_award,
+          organizer_award,
           fee_addr: address.from_verification_key("fee_addr"),
           min_ticket_price: 5_000_000,
         },
