@@ -65,7 +65,7 @@ pub fn constraints(
           },
         )
 
-  let ticket_redeem_qty = ticket_award_burn_qty * ticket_conversion_ratio
+  let ticket_redeem_qty = -ticket_award_burn_qty * ticket_conversion_ratio
   let organizer_award_qty =
     if is_burn_organizer_nft {
       expect Some(v) = in_session_datum.organizer_conversion_ratio
@@ -73,6 +73,7 @@ pub fn constraints(
     } else {
       0
     }
+  
   let remaining_lovelace_qty =
     (
       in_session_val
@@ -91,10 +92,10 @@ pub fn constraints(
           datum: ou_session_dt,
           reference_script: ou_reference_script,
         } = outputs |> flist.get(ou_s_idx)
-
+        
         and {
           (in_session_addr == ou_session_addr)?,
-          (assets.from_lovelace(remaining_lovelace_qty) == ou_session_val)?,
+          ((assets.from_lovelace(remaining_lovelace_qty) |> assets.add(pid, in_session_datum.session_token_id, 1)) == ou_session_val)?,
           (InlineDatum(in_session_dt) == ou_session_dt)?,
           (ou_reference_script == None)?,
           (!is_burn_verification_nft)?,
