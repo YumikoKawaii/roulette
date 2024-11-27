@@ -17,13 +17,13 @@ pub fn constraints(
   ou_session: Output,
   ou_fee_idx: Option<Int>,
   outputs: List<Output>,
-  cfg_dt: Data,  
+  cfg_dt: Data,
   mint: Value,
   ref_ms_idx: Int,
   ref_inputs: List<Input>,
   validity_range: ValidityRange,
 ) {
-  expect platform_cfg: PlatformConfig = cfg_dt  
+  expect platform_cfg: PlatformConfig = cfg_dt
   expect Input {
     output: Output {
       address: Address { payment_credential: Script(pid), .. } as in_session_addr,
@@ -34,9 +34,15 @@ pub fn constraints(
     ..
   } = in_session
   expect in_session_datum: SessionDatum = in_session_dt
-  expect ms_datum: MarketStateDatum = ref_inputs |> utils.get_input_by_idx(ref_ms_idx, in_session_datum.oracle_policy)
+  expect ms_datum: MarketStateDatum =
+    ref_inputs
+      |> utils.get_input_by_idx(ref_ms_idx, in_session_datum.oracle_policy)
   // verify Session Verification NFT
-  let valid_utxo = (in_session_val |> assets.quantity_of(pid, in_session_datum.session_token_id)) == 1
+  let valid_utxo =
+    (
+      in_session_val
+        |> assets.quantity_of(pid, in_session_datum.session_token_id)
+    ) == 1
 
   expect Interval {
     upper_bound: IntervalBound { bound_type: Finite(session_time_hi), .. },
@@ -97,26 +103,21 @@ pub fn constraints(
       assets.ada_policy_id,
       assets.ada_asset_name,
     ) - constants.min_ada
-  let platform_fee = {
-    let qty = total_volume * platform_cfg.fee / constants.basis_base
-    if qty < constants.min_ada {
-      0
+  
+  let (conversion_ratio, platform_fee, organizer_prize) = {
+    let expect_platform_fee = total_volume * platform_cfg.fee / constants.basis_base    
+    let expect_organizer_prize =
+    total_volume * platform_cfg.organizer_award / constants.basis_base
+
+    let conversion_ratio =
+    ( total_volume - expect_platform_fee - expect_organizer_prize ) / ticket_sales      
+    // guarantee there is no lovelace left
+    if expect_platform_fee < constants.min_ada {
+      (conversion_ratio, 0, total_volume - conversion_ratio * ticket_sales)
     } else {
-      qty
+      (conversion_ratio, expect_platform_fee, total_volume - conversion_ratio * ticket_sales - expect_platform_fee)
     }
   }
-
-  let organizer_prize = {
-    let qty = total_volume * platform_cfg.organizer_award / constants.basis_base
-    if qty < constants.min_ada {
-      0
-    } else {
-      qty
-    }
-  }
-
-  let conversion_ratio =
-    ( total_volume - platform_fee - organizer_prize ) / ticket_sales
 
   let expect_ou_session_datum =
     SessionDatum {
@@ -126,8 +127,12 @@ pub fn constraints(
       organizer_conversion_ratio: Some(organizer_prize),
     }
   let expect_ou_session_val =
-    in_session_val
-      |> assets.add(assets.ada_policy_id, assets.ada_asset_name, -platform_fee)
+    (
+      in_session_val
+        |> assets.quantity_of(assets.ada_policy_id, assets.ada_asset_name)
+    ) - platform_fee
+      |> assets.from_lovelace()
+      |> assets.add(pid, in_session_datum.session_token_id, 1)
   // find session output by idx
   let Output {
     address: ou_session_addr,

@@ -1,4 +1,4 @@
-use cardano/address.{Address}
+use cardano/address
 use cardano/assets
 use cardano/transaction.{InlineDatum, Input, Output, OutputReference}
 use constants

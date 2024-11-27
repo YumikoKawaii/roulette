@@ -36,18 +36,18 @@ validator execute(tk_cfg: TupleAsset) {
         )
       }
       Award { ref_cfg_idx, ref_market_state_idx, ou_session_idx, ou_fee_idx } -> {
-        let ou_session = outputs |> flist.get(ou_session_idx)
-        let ref_cfg_dt =
-          reference_inputs |> utils.get_input_by_idx(ref_cfg_idx, tk_cfg)
+        expect (Some(ou_session), out_remains) = outputs |> flist.get_with_tail(ou_session_idx)
+        let (ref_cfg_dt, ref_remains) =
+          reference_inputs |> utils.get_input_by_idx_with_remains(ref_cfg_idx, tk_cfg)
         award.constraints(
           in_session,
           ou_session,
           ou_fee_idx,
-          outputs,
+          out_remains,
           ref_cfg_dt,
           mint,
           ref_market_state_idx,
-          reference_inputs,
+          ref_remains,
           validity_range,
         )
       }

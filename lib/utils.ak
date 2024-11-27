@@ -28,7 +28,7 @@ pub fn get_input_by_idx(
   ref_dt
 }
 
-pub fn get_input_by_idx_with_remain(
+pub fn get_input_by_idx_with_remains(
   ref_inputs: List<Input>,
   idx: Int,
   tk: TupleAsset,
