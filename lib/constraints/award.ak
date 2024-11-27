@@ -110,7 +110,7 @@ pub fn constraints(
     total_volume * platform_cfg.organizer_award / constants.basis_base
 
     let conversion_ratio =
-    ( total_volume - expect_platform_fee - expect_organizer_prize ) / ticket_sales      
+    ( total_volume - expect_platform_fee - expect_organizer_prize ) / ticket_sales          
     // guarantee there is no lovelace left
     if expect_platform_fee < constants.min_ada {
       (conversion_ratio, 0, total_volume - conversion_ratio * ticket_sales)
@@ -118,7 +118,7 @@ pub fn constraints(
       (conversion_ratio, expect_platform_fee, total_volume - conversion_ratio * ticket_sales - expect_platform_fee)
     }
   }
-
+  
   let expect_ou_session_datum =
     SessionDatum {
       ..in_session_datum,

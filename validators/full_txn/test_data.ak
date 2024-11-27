@@ -86,9 +86,9 @@ pub const remaining_award_ticket_qty = 20_000
 
 pub const user_lovelace = 200_000_000_000
 
-pub const platform_fee = 500
+pub const platform_fee = 100
 
-pub const organizer_award = 500
+pub const organizer_award = 300
 
 pub const basis_base = 10_000
 

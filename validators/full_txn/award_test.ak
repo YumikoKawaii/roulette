@@ -355,6 +355,149 @@ test success_award_borrow_session() {
   }
 }
 
+// success_award_session_fee_too_small
+test success_award_session_fee_too_small() {
+  let session_token_id = "session_token_id"
+
+  // Reference Inputs
+  let cfg = test_data.base_cfg()
+  let ms = base_ms()
+
+  let ticket_sales = 4
+  let award_qty = ticket_sales * test_data.ticket_price
+  let platform_fee = award_qty * test_data.platform_fee / 10_000
+  let organizer_prize = award_qty * test_data.organizer_award / 10_000
+  // Inputs      
+  let session_datum =
+    SessionDatum {
+      oracle_policy: ("pid1", "asset1"),
+      session_token_id,
+      predict_type: LiqwidSupply,
+      ticket_options: [10, 20],
+      max_ticket_count_per_option: 1_000_000,
+      ticket_price: test_data.ticket_price,
+      session_time: interval.between(100, 400),
+      result_params: Some(
+        ResultParams {
+          interest_index: test_data.trigger_qtoken_rate.1st * test_data.basis_base / test_data.trigger_qtoken_rate.2nd,
+          interest_time: test_data.trigger_interest_time,
+        },
+      ),
+      ticket_win: None,
+      organizer_conversion_ratio: None,
+    }
+  let in_session =
+    Input {
+      output_reference: test_data.session_ref,
+      output: Output {
+        address: address.from_script(test_data.sm_pkh)
+          |> address.with_delegation_key(test_data.organizer_stkh),
+        value: assets.from_lovelace(
+          constants.min_ada + 4 * test_data.ticket_price,
+        )
+          |> assets.add(test_data.sm_pkh, session_token_id, 1)
+          |> assets.add(
+              test_data.sm_pkh,
+              utils.get_ticket_token_name(session_token_id, 0),
+              test_data.ticket_per_option - 1,
+            )
+          |> assets.add(
+              test_data.sm_pkh,
+              utils.get_ticket_token_name(session_token_id, 1),
+              test_data.ticket_per_option - 1,
+            )
+          |> assets.add(
+              test_data.sm_pkh,
+              utils.get_ticket_token_name(session_token_id, 2),
+              test_data.ticket_per_option - 2,
+            ),
+        datum: InlineDatum(session_datum),
+        reference_script: None,
+      },
+    }
+  let out_session =
+    Output {
+      address: address.from_script(test_data.sm_pkh)
+        |> address.with_delegation_key(test_data.organizer_stkh),
+      value: assets.from_lovelace(constants.min_ada + award_qty)
+        |> assets.add(test_data.sm_pkh, session_token_id, 1),
+      datum: InlineDatum(
+        SessionDatum {
+          ..session_datum,
+          result_params: Some(
+            ResultParams {
+              interest_index: test_data.award_qtoken_rate.1st * test_data.basis_base / test_data.award_qtoken_rate.2nd,
+              interest_time: test_data.award_interest_time,
+            },
+          ),
+          ticket_win: Some(
+            TicketWin(
+              Some(utils.get_ticket_token_name(session_token_id, 2)),
+              ( award_qty - platform_fee - organizer_prize ) / 2,
+            ),
+          ),
+          organizer_conversion_ratio: Some(organizer_prize + platform_fee),
+        },
+      ),
+      reference_script: None,
+    }
+  let rdmr =
+    Award {
+      ref_cfg_idx: 0,
+      ref_market_state_idx: 0,
+      ou_session_idx: 0,
+      ou_fee_idx: None,
+    }
+  let rdmr_data: Data = rdmr
+  let tx =
+    Transaction {
+      inputs: [in_session],
+      reference_inputs: [cfg, ms],
+      outputs: [out_session],
+      fee: 0,
+      mint: assets.zero
+        |> assets.add(
+            test_data.sm_pkh,
+            utils.get_ticket_token_name(session_token_id, 0),
+            -(test_data.ticket_per_option - 1),
+          )
+        |> assets.add(
+            test_data.sm_pkh,
+            utils.get_ticket_token_name(session_token_id, 1),
+            -(test_data.ticket_per_option - 1),
+          )
+        |> assets.add(
+            test_data.sm_pkh,
+            utils.get_ticket_token_name(session_token_id, 2),
+            -(test_data.ticket_per_option - 2),
+          ),
+      certificates: [],
+      withdrawals: [],
+      validity_range: interval.between(500, 525),
+      extra_signatories: [],
+      redeemers: [
+        Pair(Spend(test_data.session_ref), rdmr_data),
+        Pair(Mint(test_data.sm_pkh), rdmr_data),
+      ],
+      datums: dict.empty,
+      id: #"0000000000000000000000000000000000000000000000000000000000000000",
+      votes: [],
+      proposal_procedures: [],
+      current_treasury_amount: None,
+      treasury_donation: None,
+    }
+  and {
+    liqwid_sc.execute.spend(
+      test_data.tk_cfg,
+      None,
+      rdmr,
+      test_data.session_ref,
+      tx,
+    ),
+    liqwid_sc.execute.mint(test_data.tk_cfg, rdmr, test_data.sm_pkh, tx),
+  }
+}
+
 // fail_award_session_incorrect_ticket_win
 test fail_award_session_incorrect_ticket_win() fail {
   let session_token_id = "session_token_id"
